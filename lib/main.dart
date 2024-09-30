@@ -24,49 +24,68 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   double num2 = 0.0;
   String operand = "";
 
-  buttonPressed(String buttonText) {
-    if (buttonText == "CLEAR") {
-      _output = "0";
-      num1 = 0.0;
-      num2 = 0.0;
-      operand = "";
-    } else if (buttonText == "+" || buttonText == "-" || buttonText == "×" || buttonText == "÷") {
-      num1 = double.parse(output);
-      operand = buttonText;
-      _output = "0";
-    } else if (buttonText == ".") {
-      if (_output.contains(".")) {
-        return;
-      } else {
-        _output = _output + buttonText;
-      }
-    } else if (buttonText == "=") {
+ buttonPressed(String buttonText) {
+  if (buttonText == "CLEAR") {
+    _output = "0";
+    num1 = 0.0;
+    num2 = 0.0;
+    operand = "";
+  } else if (buttonText == "+" || buttonText == "-" || buttonText == "×" || buttonText == "÷") {
+    // Nếu đã có phép toán trước đó, tính toán trước
+    if (operand.isNotEmpty) {
       num2 = double.parse(output);
+      _output = _calculate(num1, num2, operand).toString();
+      num1 = double.parse(_output); // lưu kết quả để tính toán tiếp
+    } else {
+      num1 = double.parse(output);
+    }
 
-      if (operand == "+") {
-        _output = (num1 + num2).toString();
-      }
-      if (operand == "-") {
-        _output = (num1 - num2).toString();
-      }
-      if (operand == "×") {
-        _output = (num1 * num2).toString();
-      }
-      if (operand == "÷") {
-        _output = (num1 / num2).toString();
-      }
+    operand = buttonText;
+    _output = "0";
+  } else if (buttonText == "=") {
+    num2 = double.parse(output);
+    _output = _calculate(num1, num2, operand).toString();
 
-      num1 = 0.0;
-      num2 = 0.0;
-      operand = "";
+    num1 = 0.0;
+    num2 = 0.0;
+    operand = "";
+  } else if (buttonText == ".") {
+    if (_output.contains(".")) {
+      return;
     } else {
       _output = _output + buttonText;
     }
-
-    setState(() {
-      output = double.parse(_output).toStringAsFixed(2);
-    });
+  } else {
+    if (_output == "0") {
+      _output = buttonText;
+    } else {
+      _output = _output + buttonText;
+    }
   }
+
+  setState(() {
+    output = _output;
+  });
+}
+
+// Hàm tính toán đơn giản
+double _calculate(double num1, double num2, String operand) {
+  switch (operand) {
+    case "+":
+      return num1 + num2;
+    case "-":
+      return num1 - num2;
+    case "×":
+      return num1 * num2;
+    case "÷":
+      return num1 / num2;
+    default:
+      return num1;
+  }
+}
+
+
+
 
   Widget buildButton(String buttonText) {
   return Expanded(
