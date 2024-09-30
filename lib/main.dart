@@ -25,47 +25,47 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   double num2 = 0.0;
   String operand = "";
 
-  void buttonPressed(String buttonText) {
-    if (buttonText == "CLEAR") {
-      _output = "0";
-      num1 = 0.0;
-      num2 = 0.0;
-      operand = "";
-    } else if (buttonText == "DELETE") {
+ buttonPressed(String buttonText) {
+  if (buttonText == "CLEAR") {
+    _output = "0";
+    num1 = 0.0;
+    num2 = 0.0;
+    operand = "";
+  }else if (buttonText == "DELETE") {
       if (_output.length > 1) {
-        _output = _output.substring(0, _output.length - 1);
+        _output = _output.substring(0, _output.length - 1); // Xóa ký tự cuối
       } else {
         _output = "0"; // Nếu không còn ký tự nào, đặt lại về 0
-      }
-    } else if (buttonText == "+" || buttonText == "-" || buttonText == "×" || buttonText == "÷") {
-      num1 = double.parse(output);
-      operand = buttonText;
-      _output = "0";
-    } else if (buttonText == ".") {
-      if (_output.contains(".")) {
-        return;
-      } else {
-        _output = _output + buttonText;
-      }
-    } else if (buttonText == "=") {
+      }} 
+  else if (buttonText == "+" || buttonText == "-" || buttonText == "×" || buttonText == "÷") {
+    // Nếu đã có phép toán trước đó, tính toán trước
+    if (operand.isNotEmpty) {
       num2 = double.parse(output);
+      _output = _calculate(num1, num2, operand).toString();
+      num1 = double.parse(_output); // lưu kết quả để tính toán tiếp
+    } 
+    else {
+      num1 = double.parse(output);
+    }
 
-      if (operand == "+") {
-        _output = (num1 + num2).toString();
-      }
-      if (operand == "-") {
-        _output = (num1 - num2).toString();
-      }
-      if (operand == "×") {
-        _output = (num1 * num2).toString();
-      }
-      if (operand == "÷") {
-        _output = (num1 / num2).toString();
-      }
+    operand = buttonText;
+    _output = "0";
+  } else if (buttonText == "=") {
+    num2 = double.parse(output);
+    _output = _calculate(num1, num2, operand).toString();
 
-      num1 = 0.0;
-      num2 = 0.0;
-      operand = "";
+    num1 = 0.0;
+    num2 = 0.0;
+    operand = "";
+  } else if (buttonText == ".") {
+    if (_output.contains(".")) {
+      return;
+    } else {
+      _output = _output + buttonText;
+    }
+  } else {
+    if (_output == "0") {
+      _output = buttonText;
     } else {
       if (_output == "0") {
         _output = buttonText; // Nếu đầu vào là 0, thay thế bằng số được nhấn
@@ -73,11 +73,31 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         _output = _output + buttonText; // Cập nhật chuỗi đầu vào
       }
     }
-
-    setState(() {
-      output = double.parse(_output).toStringAsFixed(2);
-    });
   }
+
+  setState(() {
+    output = _output;
+  });
+}
+
+// Hàm tính toán đơn giản
+double _calculate(double num1, double num2, String operand) {
+  switch (operand) {
+    case "+":
+      return num1 + num2;
+    case "-":
+      return num1 - num2;
+    case "×":
+      return num1 * num2;
+    case "÷":
+      return num1 / num2;
+    default:
+      return num1;
+  }
+}
+
+
+
 
   Widget buildButton(String buttonText) {
     return Expanded(
