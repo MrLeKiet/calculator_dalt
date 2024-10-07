@@ -1,3 +1,4 @@
+import 'dart:math'; // Import this for mathematical functions
 import 'package:flutter/material.dart';
 
 void main() => runApp(CalculatorApp());
@@ -18,59 +19,115 @@ class CalculatorHome extends StatefulWidget {
 }
 
 class _CalculatorHomeState extends State<CalculatorHome> {
-  String output = "0";
-  String _output = "0";
-  double num1 = 0.0;
-  double num2 = 0.0;
-  String operand = "";
-  String expression = "";
-  bool isScientific = false;
+  String output = "0"; // Display output
+  String _output = "0"; // Internal output
+  double num1 = 0.0; // First operand
+  double num2 = 0.0; // Second operand
+  String operand = ""; // Current operation
+  String expression = ""; // Expression for display
+  bool isScientific = false; // Track calculator type
+  bool isResultDisplayed = false; // Flag to check if result is displayed
 
   buttonPressed(String buttonText) {
+    // If output is "Undefined", prevent further input
+    if (output == "Undefined" && buttonText != "CLEAR") {
+      return; // Ignore all inputs except CLEAR
+    }
+
     if (buttonText == "CLEAR") {
-      _output = "0";
-      num1 = 0.0;
-      num2 = 0.0;
-      operand = "";
-      expression = "";
+      _output = "0"; // Reset output
+      num1 = 0.0; // Reset num1
+      num2 = 0.0; // Reset num2
+      operand = ""; // Reset operator
+      expression = ""; // Reset expression
+      isResultDisplayed = false; // Reset result display flag
     } else if (buttonText == "+" || buttonText == "-" || buttonText == "/" || buttonText == "X") {
-      num1 = double.parse(output);
-      operand = buttonText;
-      _output = "0";
-      expression = "$num1 $operand";
+      // Save the current output and prepare for the next input
+      if (operand.isNotEmpty) {
+        num2 = double.tryParse(output) ?? 0; // Get the second operand safely
+        calculateResult(); // Calculate the result of the previous operation
+      } else {
+        num1 = double.tryParse(output) ?? 0; // Set num1 for the first operation
+      }
+      operand = buttonText; // Update the current operator
+      _output = "0"; // Reset internal output for the next number
+      expression = "$num1 $operand "; // Update expression
+      isResultDisplayed = false; // Reset the result display flag
     } else if (buttonText == ".") {
       if (_output.contains(".")) {
-        return;
+        return; // Prevent multiple decimals
       } else {
-        _output = _output + buttonText;
+        _output = _output + buttonText; // Append decimal point
       }
     } else if (buttonText == "=") {
-      num2 = double.parse(output);
-
-      if (operand == "+") {
-        _output = (num1 + num2).toString();
+      // Only calculate if the result has not been displayed yet
+      if (!isResultDisplayed) {
+        num2 = double.tryParse(output) ?? 0; // Get the last number safely
+        calculateResult(); // Calculate the final result
+        isResultDisplayed = true; // Set the flag to indicate result has been displayed
       }
-      if (operand == "-") {
-        _output = (num1 - num2).toString();
-      }
-      if (operand == "X") {
-        _output = (num1 * num2).toString();
-      }
-      if (operand == "/") {
-        _output = (num1 / num2).toString();
-      }
-
-      expression = "$expression $num2 =";
-      num1 = 0.0;
-      num2 = 0.0;
-      operand = "";
+    } else if (isScientific && (buttonText == "sin" || buttonText == "cos" || buttonText == "tan")) {
+      num1 = double.tryParse(output) ?? 0; // Get current output for trigonometric functions
+      calculateTrigonometric(buttonText); // Calculate the trigonometric result
+      isResultDisplayed = false; // Reset the result display flag
     } else {
-      _output = _output + buttonText;
+      // If _output is "0", replace it; otherwise, just append the buttonText
+      if (_output == "0") {
+        _output = buttonText;
+      } else {
+        _output = _output + buttonText; // Append the number
+      }
+      isResultDisplayed = false; // Reset the result display flag
     }
 
     setState(() {
-      output = double.parse(_output).toStringAsFixed(2);
+      output = _output; // Update displayed output
     });
+  }
+
+  void calculateResult() {
+    // Perform calculation based on the operator
+    if (operand == "+") {
+      _output = (num1 + num2).toString(); // Addition
+    }
+    if (operand == "-") {
+      _output = (num1 - num2).toString(); // Subtraction
+    }
+    if (operand == "X") {
+      _output = (num1 * num2).toString(); // Multiplication
+    }
+    if (operand == "/") {
+      if (num2 == 0) {
+        _output = "Undefined"; // Handle division by zero
+      } else {
+        _output = (num1 / num2).toString(); // Division
+      }
+    }
+    expression = "$expression $num2 ="; // Update expression for display
+    num1 = double.tryParse(_output) ?? 0; // Store result for further calculations
+    num2 = 0.0; // Reset num2 for the next operation
+    operand = ""; // Reset operator
+  }
+
+  void calculateTrigonometric(String function) {
+    // Convert degrees to radians
+    double radians = num1 * (pi / 180); 
+
+    if (function == "sin") {
+      _output = (sin(radians)).toStringAsFixed(2); // Sine calculation, format to 2 decimal places
+    } else if (function == "cos") {
+      _output = (cos(radians)).toStringAsFixed(2); // Cosine calculation, format to 2 decimal places
+    } else if (function == "tan") {
+      // Handle special cases for tan
+      if (num1 == 90 || num1 == 270) {
+        _output = "Undefined"; // Handle tan(90) and tan(270)
+      } else {
+        _output = (tan(radians)).toStringAsFixed(2); // Tangent calculation, format to 2 decimal places
+      }
+    }
+
+    expression = "$function($num1)"; // Update expression for display
+    isResultDisplayed = false; // Reset the result display flag
   }
 
   Widget buildButton(String buttonText) {
@@ -84,7 +141,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
 
   void toggleCalculatorType(String type) {
     setState(() {
-      isScientific = type == 'Scientific';
+      isScientific = type == 'Scientific'; // Toggle calculator type
     });
     Navigator.pop(context); // Close the drawer
   }
@@ -103,7 +160,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
               decoration: BoxDecoration(
                 color: Colors.blue,
                 image: DecorationImage(
-                  image: AssetImage('assets/drawer_header_background.jpg'),
+                  image: AssetImage('assets/drawer_header_background.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -118,12 +175,12 @@ class _CalculatorHomeState extends State<CalculatorHome> {
             ListTile(
               leading: Icon(Icons.calculate),
               title: Text('Standard', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Standard'),
+              onTap: () => toggleCalculatorType('Standard'), // Change to Standard mode
             ),
             ListTile(
               leading: Icon(Icons.science),
               title: Text('Scientific', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Scientific'),
+              onTap: () => toggleCalculatorType('Scientific'), // Change to Scientific mode
             ),
           ],
         ),
