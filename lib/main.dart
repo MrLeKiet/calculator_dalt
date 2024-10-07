@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 void main() => runApp(CalculatorApp());
 
 class CalculatorApp extends StatelessWidget {
@@ -26,14 +27,19 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   String expression = "";
   bool isScientific = false;
 
-  buttonPressed(String buttonText) {
-    if (buttonText == "CLEAR") {
-      _output = "0";
-      num1 = 0.0;
-      num2 = 0.0;
-      operand = "";
-      expression = "";
-    } else if (buttonText == "+" || buttonText == "-" || buttonText == "/" || buttonText == "X") {
+ buttonPressed(String buttonText) {
+  if (buttonText == "CLEAR") {
+    _output = "0";
+    num1 = 0.0;
+    num2 = 0.0;
+    operand = "";
+  } else if (buttonText == "+" || buttonText == "-" || buttonText == "×" || buttonText == "÷") {
+    // Nếu đã có phép toán trước đó, tính toán trước
+    if (operand.isNotEmpty) {
+      num2 = double.parse(output);
+      _output = _calculate(num1, num2, operand).toString();
+      num1 = double.parse(_output); // lưu kết quả để tính toán tiếp
+    } else {
       num1 = double.parse(output);
       operand = buttonText;
       _output = "0";
@@ -67,6 +73,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
     } else {
       _output = _output + buttonText;
     }
+  }
 
     setState(() {
       output = double.parse(_output).toStringAsFixed(2);
@@ -74,20 +81,19 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   }
 
   Widget buildButton(String buttonText) {
-    return Expanded(
-      child: ElevatedButton(
-        onPressed: () => buttonPressed(buttonText),
-        child: Text(buttonText, style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+  return Expanded(
+    child: OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        padding: EdgeInsets.all(24.0),  // Đặt padding ở đây
       ),
-    );
-  }
-
-  void toggleCalculatorType(String type) {
-    setState(() {
-      isScientific = type == 'Scientific';
-    });
-    Navigator.pop(context); // Close the drawer
-  }
+      child: Text(
+        buttonText,
+        style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+      ),
+      onPressed: () => buttonPressed(buttonText),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -217,6 +223,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
               ],
               Row(
                 children: [
+                  buildButton("DELETE"), // Nút xóa 1 ký tự
                   buildButton("CLEAR"),
                   SizedBox(width: 16.0),
                   buildButton("="),
