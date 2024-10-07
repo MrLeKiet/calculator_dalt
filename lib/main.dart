@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'dart:math';
 void main() => runApp(CalculatorApp());
 
 class CalculatorApp extends StatelessWidget {
@@ -33,7 +33,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       num2 = 0.0;
       operand = "";
       expression = "";
-    } else if (buttonText == "+" || buttonText == "-" || buttonText == "/" || buttonText == "X") {
+    } else if (buttonText == "+" || buttonText == "-" || buttonText == "/" || buttonText == "X" || buttonText == "squrt") {
       num1 = double.parse(output);
       operand = buttonText;
       _output = "0";
