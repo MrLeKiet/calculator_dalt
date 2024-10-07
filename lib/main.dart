@@ -26,6 +26,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   String expression = ""; // Expression for display
   bool isScientific = false; // Track calculator type
   bool isResultDisplayed = false; // Flag to check if result is displayed
+  bool isEqualPressed = false; // Prevent multiple equals presses
 
   buttonPressed(String buttonText) {
     // If output is "Undefined", prevent further input
@@ -40,7 +41,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       operand = ""; // Reset operator
       expression = ""; // Reset expression
       isResultDisplayed = false; // Reset result display flag
+      isEqualPressed = false; // Reset equal flag
     } else if (buttonText == "+" || buttonText == "-" || buttonText == "/" || buttonText == "X") {
+      // If there is already a result from pressing equals, reset before new operation
+      if (isEqualPressed) {
+        num1 = double.tryParse(output) ?? 0;
+        isEqualPressed = false;
+      }
+
       // Save the current output and prepare for the next input
       if (operand.isNotEmpty) {
         num2 = double.tryParse(output) ?? 0; // Get the second operand safely
@@ -59,17 +67,33 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         _output = _output + buttonText; // Append decimal point
       }
     } else if (buttonText == "=") {
+      // Prevent repeated equals calculation
+      if (isEqualPressed) {
+        return; // Do nothing if `=` was already pressed
+      }
+
       // Only calculate if the result has not been displayed yet
       if (!isResultDisplayed) {
         num2 = double.tryParse(output) ?? 0; // Get the last number safely
+        if (operand.isEmpty) {
+          return; // If no operand is set, do nothing on equals press
+        }
         calculateResult(); // Calculate the final result
         isResultDisplayed = true; // Set the flag to indicate result has been displayed
+        isEqualPressed = true; // Prevent multiple equals presses
       }
     } else if (isScientific && (buttonText == "sin" || buttonText == "cos" || buttonText == "tan")) {
       num1 = double.tryParse(output) ?? 0; // Get current output for trigonometric functions
       calculateTrigonometric(buttonText); // Calculate the trigonometric result
       isResultDisplayed = false; // Reset the result display flag
     } else {
+      // If result was displayed and a new number is pressed, reset the output
+      if (isResultDisplayed || isEqualPressed) {
+        _output = ""; // Clear the output if a result was displayed
+        isResultDisplayed = false; // Reset the result flag
+        isEqualPressed = false; // Reset equal flag
+      }
+
       // If _output is "0", replace it; otherwise, just append the buttonText
       if (_output == "0") {
         _output = buttonText;
@@ -102,7 +126,12 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         _output = (num1 / num2).toString(); // Division
       }
     }
-    expression = "$expression $num2 ="; // Update expression for display
+
+    // Only update the expression once, then prevent further updates on repeated '=' presses
+    if (!isEqualPressed) {
+      expression = "$num1 $operand $num2 ="; // Update expression for display once
+    }
+
     num1 = double.tryParse(_output) ?? 0; // Store result for further calculations
     num2 = 0.0; // Reset num2 for the next operation
     operand = ""; // Reset operator
@@ -110,7 +139,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
 
   void calculateTrigonometric(String function) {
     // Convert degrees to radians
-    double radians = num1 * (pi / 180); 
+    double radians = num1 * (pi / 180);
 
     if (function == "sin") {
       _output = (sin(radians)).toStringAsFixed(2); // Sine calculation, format to 2 decimal places
