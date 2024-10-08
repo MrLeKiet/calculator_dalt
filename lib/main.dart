@@ -102,10 +102,10 @@ class _CalculatorHomeState extends State<CalculatorHome> {
             DrawerHeader(
               decoration: BoxDecoration(
                 color: Colors.blue,
-                image: DecorationImage(
-                  image: AssetImage('assets/drawer_header_background.jpg'),
-                  fit: BoxFit.cover,
-                ),
+                // image: DecorationImage(
+                //   image: AssetImage('assets/drawer_header_background.jpg'),
+                //   fit: BoxFit.cover,
+                // ),
               ),
               child: Text(
                 'Calculator Type',
