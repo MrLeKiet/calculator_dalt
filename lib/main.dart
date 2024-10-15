@@ -1,5 +1,6 @@
 import 'dart:math'; // Import this for mathematical functions
 import 'package:flutter/material.dart';
+
 void main() => runApp(CalculatorApp());
 
 class CalculatorApp extends StatelessWidget {
