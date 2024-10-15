@@ -43,7 +43,17 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       expression = ""; // Reset expression
       isResultDisplayed = false; // Reset result display flag
       isEqualPressed = false; // Reset equal flag
-    } else if (buttonText == "+" || buttonText == "-" || buttonText == "/" || buttonText == "X") {
+    } else if (buttonText == "DEL") {
+      if (_output.length > 1) {
+        _output =
+            _output.substring(0, _output.length - 1); // Xóa ký tự cuối cùng
+      } else {
+        _output = "0"; // Nếu chỉ còn 1 ký tự, đặt lại thành 0
+      }
+    } else if (buttonText == "+" ||
+        buttonText == "-" ||
+        buttonText == "/" ||
+        buttonText == "X") {
       // If there is already a result from pressing equals, reset before new operation
       if (isEqualPressed) {
         num1 = double.tryParse(output) ?? 0;
@@ -80,11 +90,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           return; // If no operand is set, do nothing on equals press
         }
         calculateResult(); // Calculate the final result
-        isResultDisplayed = true; // Set the flag to indicate result has been displayed
+        isResultDisplayed =
+            true; // Set the flag to indicate result has been displayed
         isEqualPressed = true; // Prevent multiple equals presses
       }
-    } else if (isScientific && (buttonText == "sin" || buttonText == "cos" || buttonText == "tan")) {
-      num1 = double.tryParse(output) ?? 0; // Get current output for trigonometric functions
+    } else if (isScientific &&
+        (buttonText == "sin" || buttonText == "cos" || buttonText == "tan")) {
+      num1 = double.tryParse(output) ??
+          0; // Get current output for trigonometric functions
       calculateTrigonometric(buttonText); // Calculate the trigonometric result
       isResultDisplayed = false; // Reset the result display flag
     } else {
@@ -130,10 +143,12 @@ class _CalculatorHomeState extends State<CalculatorHome> {
 
     // Only update the expression once, then prevent further updates on repeated '=' presses
     if (!isEqualPressed) {
-      expression = "$num1 $operand $num2 ="; // Update expression for display once
+      expression =
+          "$num1 $operand $num2 ="; // Update expression for display once
     }
 
-    num1 = double.tryParse(_output) ?? 0; // Store result for further calculations
+    num1 =
+        double.tryParse(_output) ?? 0; // Store result for further calculations
     num2 = 0.0; // Reset num2 for the next operation
     operand = ""; // Reset operator
   }
@@ -143,15 +158,18 @@ class _CalculatorHomeState extends State<CalculatorHome> {
     double radians = num1 * (pi / 180);
 
     if (function == "sin") {
-      _output = (sin(radians)).toStringAsFixed(2); // Sine calculation, format to 2 decimal places
+      _output = (sin(radians))
+          .toStringAsFixed(2); // Sine calculation, format to 2 decimal places
     } else if (function == "cos") {
-      _output = (cos(radians)).toStringAsFixed(2); // Cosine calculation, format to 2 decimal places
+      _output = (cos(radians))
+          .toStringAsFixed(2); // Cosine calculation, format to 2 decimal places
     } else if (function == "tan") {
       // Handle special cases for tan
       if (num1 == 90 || num1 == 270) {
         _output = "Undefined"; // Handle tan(90) and tan(270)
       } else {
-        _output = (tan(radians)).toStringAsFixed(2); // Tangent calculation, format to 2 decimal places
+        _output = (tan(radians)).toStringAsFixed(
+            2); // Tangent calculation, format to 2 decimal places
       }
     }
 
@@ -163,7 +181,8 @@ class _CalculatorHomeState extends State<CalculatorHome> {
     return Expanded(
       child: ElevatedButton(
         onPressed: () => buttonPressed(buttonText),
-        child: Text(buttonText, style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+        child: Text(buttonText,
+            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -179,7 +198,13 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Calculator'),
+        title: FittedBox(
+          fit: BoxFit.scaleDown, // Tự động điều chỉnh kích thước chữ
+          child: Text(
+            'Calculator (${isScientific ? "Scientific" : "Standard"})',
+            style: TextStyle(fontSize: 24),
+          ),
+        ),
       ),
       drawer: Drawer(
         child: ListView(
@@ -204,12 +229,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
             ListTile(
               leading: Icon(Icons.calculate),
               title: Text('Standard', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Standard'), // Change to Standard mode
+              onTap: () =>
+                  toggleCalculatorType('Standard'), // Change to Standard mode
             ),
             ListTile(
               leading: Icon(Icons.science),
               title: Text('Scientific', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Scientific'), // Change to Scientific mode
+              onTap: () => toggleCalculatorType(
+                  'Scientific'), // Change to Scientific mode
             ),
           ],
         ),
@@ -219,12 +246,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           Container(
             alignment: Alignment.centerRight,
             padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
-            child: Text(expression, style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
+            child: Text(expression,
+                style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
           ),
           Container(
             alignment: Alignment.centerRight,
             padding: EdgeInsets.symmetric(vertical: 24.0, horizontal: 12.0),
-            child: Text(output, style: TextStyle(fontSize: 48.0, fontWeight: FontWeight.bold)),
+            child: Text(output,
+                style: TextStyle(fontSize: 48.0, fontWeight: FontWeight.bold)),
           ),
           Expanded(
             child: Divider(),
@@ -273,7 +302,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
                   SizedBox(width: 16.0),
                   buildButton("0"),
                   SizedBox(width: 16.0),
-                  buildButton("00"),
+                  buildButton("DEL"),
                   SizedBox(width: 16.0),
                   buildButton("+"),
                 ],
