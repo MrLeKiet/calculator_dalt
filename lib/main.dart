@@ -53,8 +53,8 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       }
     } else if (buttonText == "+" ||
         buttonText == "-" ||
-        buttonText == "/" ||
-        buttonText == "X") {
+        buttonText == "÷" ||
+        buttonText == "x") {
       // If there is already a result from pressing equals, reset before new operation
       if (isEqualPressed) {
         num1 = double.tryParse(output) ?? 0;
@@ -70,7 +70,8 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       }
       operand = buttonText; // Update the current operator
       _output = "0"; // Reset internal output for the next number
-      expression = "$num1 $operand "; // Update expression
+      expression =
+          "${formatNumber(num1)} $operand "; // Update expression with formatted number
       isResultDisplayed = false; // Reset the result display flag
     } else if (buttonText == ".") {
       if (_output.contains(".")) {
@@ -124,32 +125,33 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   }
 
   void calculateResult() {
+    double result = 0.0;
+
     // Perform calculation based on the operator
     if (operand == "+") {
-      _output = (num1 + num2).toString(); // Addition
+      result = num1 + num2; // Addition
     }
     if (operand == "-") {
-      _output = (num1 - num2).toString(); // Subtraction
+      result = num1 - num2; // Subtraction
     }
-    if (operand == "X") {
-      _output = (num1 * num2).toString(); // Multiplication
+    if (operand == "x") {
+      result = num1 * num2; // Multiplication
     }
-    if (operand == "/") {
+    if (operand == "÷") {
       if (num2 == 0) {
         _output = "Undefined"; // Handle division by zero
+        expression = "Undefined";
+        return;
       } else {
-        _output = (num1 / num2).toString(); // Division
+        result = num1 / num2; // Division
       }
     }
 
-    // Only update the expression once, then prevent further updates on repeated '=' presses
-    if (!isEqualPressed) {
-      expression =
-          "$num1 $operand $num2 ="; // Update expression for display once
-    }
+    // Format the result and expression
+    _output = formatNumber(result);
+    expression = "${formatNumber(num1)} $operand ${formatNumber(num2)} =";
 
-    num1 =
-        double.tryParse(_output) ?? 0; // Store result for further calculations
+    num1 = result; // Store result for further calculations
     num2 = 0.0; // Reset num2 for the next operation
     operand = ""; // Reset operator
   }
@@ -174,8 +176,15 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       }
     }
 
-    expression = "$function($num1)"; // Update expression for display
+    expression =
+        "$function(${formatNumber(num1)})"; // Update expression for display
     isResultDisplayed = false; // Reset the result display flag
+  }
+
+  String formatNumber(double number) {
+    return number.truncateToDouble() == number
+        ? number.toStringAsFixed(0)
+        : number.toString();
   }
 
   Widget buildButton(String buttonText) {
@@ -199,13 +208,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: FittedBox(
-          fit: BoxFit.scaleDown, // Tự động điều chỉnh kích thước chữ
-          child: Text(
-            'Calculator (${isScientific ? "Scientific" : "Standard"})',
-            style: TextStyle(fontSize: 24),
-          ),
-        ),
+        title: Text(isScientific ? 'Scientific' : 'Standard'),
       ),
       drawer: Drawer(
         child: ListView(
@@ -246,13 +249,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         children: [
           Container(
             alignment: Alignment.centerRight,
-            padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+            padding: EdgeInsets.symmetric(
+                vertical: 4.0, horizontal: 12.0), // Reduced vertical padding
             child: Text(expression,
                 style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
           ),
           Container(
             alignment: Alignment.centerRight,
-            padding: EdgeInsets.symmetric(vertical: 24.0, horizontal: 12.0),
+            padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
             child: Text(output,
                 style: TextStyle(fontSize: 48.0, fontWeight: FontWeight.bold)),
           ),
@@ -269,7 +273,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
                   SizedBox(width: 8.0),
                   buildButton("9"),
                   SizedBox(width: 8.0),
-                  buildButton("/"),
+                  buildButton("÷"),
                 ],
               ),
               SizedBox(height: 8.0),
@@ -281,7 +285,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
                   SizedBox(width: 8.0),
                   buildButton("6"),
                   SizedBox(width: 8.0),
-                  buildButton("X"),
+                  buildButton("x"),
                 ],
               ),
               SizedBox(height: 8.0),
