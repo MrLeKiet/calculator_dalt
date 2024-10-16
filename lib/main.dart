@@ -1,4 +1,5 @@
 import 'dart:math'; // Import this for mathematical functions
+
 import 'package:flutter/material.dart';
 
 void main() => runApp(CalculatorApp());
@@ -43,7 +44,17 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       expression = ""; // Reset expression
       isResultDisplayed = false; // Reset result display flag
       isEqualPressed = false; // Reset equal flag
-    } else if (buttonText == "+" || buttonText == "-" || buttonText == "/" || buttonText == "X") {
+    } else if (buttonText == "DEL") {
+      if (_output.length > 1) {
+        _output =
+            _output.substring(0, _output.length - 1); // Xóa ký tự cuối cùng
+      } else {
+        _output = "0"; // Nếu chỉ còn 1 ký tự, đặt lại thành 0
+      }
+    } else if (buttonText == "+" ||
+        buttonText == "-" ||
+        buttonText == "÷" ||
+        buttonText == "x") {
       // If there is already a result from pressing equals, reset before new operation
       if (isEqualPressed) {
         num1 = double.tryParse(output) ?? 0;
@@ -59,7 +70,8 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       }
       operand = buttonText; // Update the current operator
       _output = "0"; // Reset internal output for the next number
-      expression = "$num1 $operand "; // Update expression
+      expression =
+          "${formatNumber(num1)} $operand "; // Update expression with formatted number
       isResultDisplayed = false; // Reset the result display flag
     } else if (buttonText == ".") {
       if (_output.contains(".")) {
@@ -80,11 +92,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           return; // If no operand is set, do nothing on equals press
         }
         calculateResult(); // Calculate the final result
-        isResultDisplayed = true; // Set the flag to indicate result has been displayed
+        isResultDisplayed =
+            true; // Set the flag to indicate result has been displayed
         isEqualPressed = true; // Prevent multiple equals presses
       }
-    } else if (isScientific && (buttonText == "sin" || buttonText == "cos" || buttonText == "tan")) {
-      num1 = double.tryParse(output) ?? 0; // Get current output for trigonometric functions
+    } else if (isScientific &&
+        (buttonText == "sin" || buttonText == "cos" || buttonText == "tan")) {
+      num1 = double.tryParse(output) ??
+          0; // Get current output for trigonometric functions
       calculateTrigonometric(buttonText); // Calculate the trigonometric result
       isResultDisplayed = false; // Reset the result display flag
     } else {
@@ -110,30 +125,33 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   }
 
   void calculateResult() {
+    double result = 0.0;
+
     // Perform calculation based on the operator
     if (operand == "+") {
-      _output = (num1 + num2).toString(); // Addition
+      result = num1 + num2; // Addition
     }
     if (operand == "-") {
-      _output = (num1 - num2).toString(); // Subtraction
+      result = num1 - num2; // Subtraction
     }
-    if (operand == "X") {
-      _output = (num1 * num2).toString(); // Multiplication
+    if (operand == "x") {
+      result = num1 * num2; // Multiplication
     }
-    if (operand == "/") {
+    if (operand == "÷") {
       if (num2 == 0) {
         _output = "Undefined"; // Handle division by zero
+        expression = "Undefined";
+        return;
       } else {
-        _output = (num1 / num2).toString(); // Division
+        result = num1 / num2; // Division
       }
     }
 
-    // Only update the expression once, then prevent further updates on repeated '=' presses
-    if (!isEqualPressed) {
-      expression = "$num1 $operand $num2 ="; // Update expression for display once
-    }
+    // Format the result and expression
+    _output = formatNumber(result);
+    expression = "${formatNumber(num1)} $operand ${formatNumber(num2)} =";
 
-    num1 = double.tryParse(_output) ?? 0; // Store result for further calculations
+    num1 = result; // Store result for further calculations
     num2 = 0.0; // Reset num2 for the next operation
     operand = ""; // Reset operator
   }
@@ -143,27 +161,38 @@ class _CalculatorHomeState extends State<CalculatorHome> {
     double radians = num1 * (pi / 180);
 
     if (function == "sin") {
-      _output = (sin(radians)).toStringAsFixed(2); // Sine calculation, format to 2 decimal places
+      _output = (sin(radians))
+          .toStringAsFixed(2); // Sine calculation, format to 2 decimal places
     } else if (function == "cos") {
-      _output = (cos(radians)).toStringAsFixed(2); // Cosine calculation, format to 2 decimal places
+      _output = (cos(radians))
+          .toStringAsFixed(2); // Cosine calculation, format to 2 decimal places
     } else if (function == "tan") {
       // Handle special cases for tan
       if (num1 == 90 || num1 == 270) {
         _output = "Undefined"; // Handle tan(90) and tan(270)
       } else {
-        _output = (tan(radians)).toStringAsFixed(2); // Tangent calculation, format to 2 decimal places
+        _output = (tan(radians)).toStringAsFixed(
+            2); // Tangent calculation, format to 2 decimal places
       }
     }
 
-    expression = "$function($num1)"; // Update expression for display
+    expression =
+        "$function(${formatNumber(num1)})"; // Update expression for display
     isResultDisplayed = false; // Reset the result display flag
+  }
+
+  String formatNumber(double number) {
+    return number.truncateToDouble() == number
+        ? number.toStringAsFixed(0)
+        : number.toString();
   }
 
   Widget buildButton(String buttonText) {
     return Expanded(
       child: ElevatedButton(
         onPressed: () => buttonPressed(buttonText),
-        child: Text(buttonText, style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+        child: Text(buttonText,
+            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -179,7 +208,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Calculator'),
+        title: Text(isScientific ? 'Scientific' : 'Standard'),
       ),
       drawer: Drawer(
         child: ListView(
@@ -204,12 +233,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
             ListTile(
               leading: Icon(Icons.calculate),
               title: Text('Standard', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Standard'), // Change to Standard mode
+              onTap: () =>
+                  toggleCalculatorType('Standard'), // Change to Standard mode
             ),
             ListTile(
               leading: Icon(Icons.science),
               title: Text('Scientific', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Scientific'), // Change to Scientific mode
+              onTap: () => toggleCalculatorType(
+                  'Scientific'), // Change to Scientific mode
             ),
           ],
         ),
@@ -218,13 +249,16 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         children: [
           Container(
             alignment: Alignment.centerRight,
-            padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
-            child: Text(expression, style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
+            padding: EdgeInsets.symmetric(
+                vertical: 4.0, horizontal: 12.0), // Reduced vertical padding
+            child: Text(expression,
+                style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
           ),
           Container(
             alignment: Alignment.centerRight,
-            padding: EdgeInsets.symmetric(vertical: 24.0, horizontal: 12.0),
-            child: Text(output, style: TextStyle(fontSize: 48.0, fontWeight: FontWeight.bold)),
+            padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+            child: Text(output,
+                style: TextStyle(fontSize: 48.0, fontWeight: FontWeight.bold)),
           ),
           Expanded(
             child: Divider(),
@@ -234,81 +268,81 @@ class _CalculatorHomeState extends State<CalculatorHome> {
               Row(
                 children: [
                   buildButton("7"),
-                  SizedBox(width: 16.0),
+                  SizedBox(width: 8.0),
                   buildButton("8"),
-                  SizedBox(width: 16.0),
+                  SizedBox(width: 8.0),
                   buildButton("9"),
-                  SizedBox(width: 16.0),
-                  buildButton("/"),
+                  SizedBox(width: 8.0),
+                  buildButton("÷"),
                 ],
               ),
-              SizedBox(height: 16.0),
+              SizedBox(height: 8.0),
               Row(
                 children: [
                   buildButton("4"),
-                  SizedBox(width: 16.0),
+                  SizedBox(width: 8.0),
                   buildButton("5"),
-                  SizedBox(width: 16.0),
+                  SizedBox(width: 8.0),
                   buildButton("6"),
-                  SizedBox(width: 16.0),
-                  buildButton("X"),
+                  SizedBox(width: 8.0),
+                  buildButton("x"),
                 ],
               ),
-              SizedBox(height: 16.0),
+              SizedBox(height: 8.0),
               Row(
                 children: [
                   buildButton("1"),
-                  SizedBox(width: 16.0),
+                  SizedBox(width: 8.0),
                   buildButton("2"),
-                  SizedBox(width: 16.0),
+                  SizedBox(width: 8.0),
                   buildButton("3"),
-                  SizedBox(width: 16.0),
+                  SizedBox(width: 8.0),
                   buildButton("-"),
                 ],
               ),
-              SizedBox(height: 16.0),
+              SizedBox(height: 8.0),
               Row(
                 children: [
                   buildButton("."),
-                  SizedBox(width: 16.0),
+                  SizedBox(width: 8.0),
                   buildButton("0"),
-                  SizedBox(width: 16.0),
-                  buildButton("00"),
-                  SizedBox(width: 16.0),
+                  SizedBox(width: 8.0),
+                  buildButton("DEL"),
+                  SizedBox(width: 8.0),
                   buildButton("+"),
                 ],
               ),
-              SizedBox(height: 16.0),
+              SizedBox(height: 8.0),
               if (isScientific) ...[
                 Row(
                   children: [
                     buildButton("sin"),
-                    SizedBox(width: 16.0),
+                    SizedBox(width: 8.0),
                     buildButton("cos"),
-                    SizedBox(width: 16.0),
+                    SizedBox(width: 8.0),
                     buildButton("tan"),
                   ],
                 ),
-                SizedBox(height: 16.0),
+                SizedBox(height: 8.0),
                 Row(
                   children: [
                     buildButton("log"),
-                    SizedBox(width: 16.0),
+                    SizedBox(width: 8.0),
                     buildButton("ln"),
-                    SizedBox(width: 16.0),
+                    SizedBox(width: 8.0),
                     buildButton("sqrt"),
                   ],
                 ),
-                SizedBox(height: 16.0),
+                SizedBox(height: 8.0),
               ],
               Row(
                 children: [
                   buildButton("CLEAR"),
-                  SizedBox(width: 16.0),
+                  SizedBox(width: 8.0),
                   buildButton("="),
                 ],
               ),
-              SizedBox(height: 16.0), // Bottom gap for CLEAR and = buttons
+              SizedBox(height: 8.0), // Bottom gap for CLEAR and = buttons
             ],
           ),
         ],
