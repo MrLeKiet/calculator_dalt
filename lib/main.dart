@@ -29,6 +29,9 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   bool isScientific = false; // Track calculator type
   bool isResultDisplayed = false; // Flag to check if result is displayed
   bool isEqualPressed = false; // Prevent multiple equals presses
+  bool showTrigonometry = false; // Track visibility of trigonometric buttons
+
+  final GlobalKey _trigonometryKey = GlobalKey(); // Key for Trigonometry button
 
   buttonPressed(String buttonText) {
     // If output is "Undefined", prevent further input
@@ -97,11 +100,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         isEqualPressed = true; // Prevent multiple equals presses
       }
     } else if (isScientific &&
-        (buttonText == "sin" || buttonText == "cos" || buttonText == "tan")) {
+        (buttonText == "sin" || buttonText == "cos" || buttonText == "tan" || buttonText == "log" || buttonText == "ln" || buttonText == "sqrt")) {
       num1 = double.tryParse(output) ??
           0; // Get current output for trigonometric functions
       calculateTrigonometric(buttonText); // Calculate the trigonometric result
       isResultDisplayed = false; // Reset the result display flag
+      setState(() {
+        showTrigonometry = false; // Close the overlay
+      });
     } else {
       // If result was displayed and a new number is pressed, reset the output
       if (isResultDisplayed || isEqualPressed) {
@@ -162,18 +168,23 @@ class _CalculatorHomeState extends State<CalculatorHome> {
 
     if (function == "sin") {
       _output = (sin(radians))
-          .toStringAsFixed(2); // Sine calculation, format to 2 decimal places
+          .toString(); // Sine calculation, format to 2 decimal places
     } else if (function == "cos") {
       _output = (cos(radians))
-          .toStringAsFixed(2); // Cosine calculation, format to 2 decimal places
+          .toString(); // Cosine calculation, format to 2 decimal places
     } else if (function == "tan") {
       // Handle special cases for tan
       if (num1 == 90 || num1 == 270) {
         _output = "Undefined"; // Handle tan(90) and tan(270)
       } else {
-        _output = (tan(radians)).toStringAsFixed(
-            2); // Tangent calculation, format to 2 decimal places
+        _output = (tan(radians)).toString(); // Tangent calculation, format to 2 decimal places
       }
+    } else if (function == "log") {
+      _output = (log(num1) / log(10)).toString(); // Logarithm base 10
+    } else if (function == "ln") {
+      _output = log(num1).toString(); // Natural logarithm
+    } else if (function == "sqrt") {
+      _output = sqrt(num1).toString(); // Square root
     }
 
     expression =
@@ -187,10 +198,11 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         : number.toString();
   }
 
-  Widget buildButton(String buttonText) {
+  Widget buildButton(String buttonText, {VoidCallback? onPressed, Key? key}) {
     return Expanded(
       child: ElevatedButton(
-        onPressed: () => buttonPressed(buttonText),
+        key: key,
+        onPressed: onPressed ?? () => buttonPressed(buttonText),
         child: Text(buttonText,
             style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
       ),
@@ -200,8 +212,15 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   void toggleCalculatorType(String type) {
     setState(() {
       isScientific = type == 'Scientific'; // Toggle calculator type
+      showTrigonometry = false; // Reset trigonometry buttons visibility
     });
     Navigator.pop(context); // Close the drawer
+  }
+
+  void toggleTrigonometry() {
+    setState(() {
+      showTrigonometry = !showTrigonometry; // Toggle trigonometry buttons
+    });
   }
 
   @override
@@ -245,108 +264,140 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           ],
         ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Container(
-            alignment: Alignment.centerRight,
-            padding: EdgeInsets.symmetric(
-                vertical: 4.0, horizontal: 12.0), // Reduced vertical padding
-            child: Text(expression,
-                style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
-          ),
-          Container(
-            alignment: Alignment.centerRight,
-            padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
-            child: Text(output,
-                style: TextStyle(fontSize: 48.0, fontWeight: FontWeight.bold)),
-          ),
-          Expanded(
-            child: Divider(),
-          ),
           Column(
             children: [
-              Row(
-                children: [
-                  buildButton("7"),
-                  SizedBox(width: 8.0),
-                  buildButton("8"),
-                  SizedBox(width: 8.0),
-                  buildButton("9"),
-                  SizedBox(width: 8.0),
-                  buildButton("÷"),
-                ],
+              Container(
+                alignment: Alignment.centerRight,
+                padding: EdgeInsets.symmetric(
+                    vertical: 4.0, horizontal: 12.0), // Reduced vertical padding
+                child: Text(expression,
+                    style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
               ),
-              SizedBox(height: 8.0),
-              Row(
-                children: [
-                  buildButton("4"),
-                  SizedBox(width: 8.0),
-                  buildButton("5"),
-                  SizedBox(width: 8.0),
-                  buildButton("6"),
-                  SizedBox(width: 8.0),
-                  buildButton("x"),
-                ],
+              Container(
+                alignment: Alignment.centerRight,
+                padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+                child: Text(output,
+                    style: TextStyle(fontSize: 48.0, fontWeight: FontWeight.bold)),
               ),
-              SizedBox(height: 8.0),
-              Row(
-                children: [
-                  buildButton("1"),
-                  SizedBox(width: 8.0),
-                  buildButton("2"),
-                  SizedBox(width: 8.0),
-                  buildButton("3"),
-                  SizedBox(width: 8.0),
-                  buildButton("-"),
-                ],
+              Expanded(
+                child: Divider(),
               ),
-              SizedBox(height: 8.0),
-              Row(
-                children: [
-                  buildButton("."),
-                  SizedBox(width: 8.0),
-                  buildButton("0"),
-                  SizedBox(width: 8.0),
-                  buildButton("DEL"),
-                  SizedBox(width: 8.0),
-                  buildButton("+"),
-                ],
-              ),
-              SizedBox(height: 8.0),
               if (isScientific) ...[
                 Row(
                   children: [
-                    buildButton("sin"),
-                    SizedBox(width: 8.0),
-                    buildButton("cos"),
-                    SizedBox(width: 8.0),
-                    buildButton("tan"),
+                    buildButton("Trigonometry", onPressed: toggleTrigonometry, key: _trigonometryKey),
                   ],
                 ),
-                SizedBox(height: 8.0),
-                Row(
-                  children: [
-                    buildButton("log"),
-                    SizedBox(width: 8.0),
-                    buildButton("ln"),
-                    SizedBox(width: 8.0),
-                    buildButton("sqrt"),
-                  ],
-                ),
-                SizedBox(height: 8.0),
+                if (showTrigonometry) ...[
+                ],
               ],
-              Row(
+              Column(
                 children: [
-                  buildButton("CLEAR"),
-                  SizedBox(width: 8.0),
-                  buildButton("="),
+                  SizedBox(height: 8.0),
+                  Row(
+                    children: [
+                      buildButton("7"),
+                      SizedBox(width: 8.0),
+                      buildButton("8"),
+                      SizedBox(width: 8.0),
+                      buildButton("9"),
+                      SizedBox(width: 8.0),
+                      buildButton("÷"),
+                    ],
+                  ),
+                  SizedBox(height: 8.0),
+                  Row(
+                    children: [
+                      buildButton("4"),
+                      SizedBox(width: 8.0),
+                      buildButton("5"),
+                      SizedBox(width: 8.0),
+                      buildButton("6"),
+                      SizedBox(width: 8.0),
+                      buildButton("x"),
+                    ],
+                  ),
+                  SizedBox(height: 8.0),
+                  Row(
+                    children: [
+                      buildButton("1"),
+                      SizedBox(width: 8.0),
+                      buildButton("2"),
+                      SizedBox(width: 8.0),
+                      buildButton("3"),
+                      SizedBox(width: 8.0),
+                      buildButton("-"),
+                    ],
+                  ),
+                  SizedBox(height: 8.0),
+                  Row(
+                    children: [
+                      buildButton("."),
+                      SizedBox(width: 8.0),
+                      buildButton("0"),
+                      SizedBox(width: 8.0),
+                      buildButton("DEL"),
+                      SizedBox(width: 8.0),
+                      buildButton("+"),
+                    ],
+                  ),
+                  SizedBox(height: 8.0),
+                  Row(
+                    children: [
+                      buildButton("CLEAR"),
+                      SizedBox(width: 8.0),
+                      buildButton("="),
+                    ],
+                  ),
+                  SizedBox(height: 8.0), // Bottom gap for CLEAR and = buttons
                 ],
               ),
-              SizedBox(height: 8.0), // Bottom gap for CLEAR and = buttons
             ],
           ),
+          if (showTrigonometry)
+            Positioned(
+              top: _getTrigonometryButtonPosition().dy - 18, // Adjust the position as needed
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 105.0, // Height of the overlay
+                color: const Color.fromARGB(255, 254, 247, 255),
+                // color: Colors.white,
+                child: Column(
+                  children: [
+                    SizedBox(height: 0.0),
+                    Row(
+                      children: [
+                        buildButton("sin"),
+                        SizedBox(width: 8.0),
+                        buildButton("cos"),
+                        SizedBox(width: 8.0),
+                        buildButton("tan"),
+                      ],
+                    ),
+                    SizedBox(height: 4.0),
+                    Row(
+                      children: [
+                        buildButton("log"),
+                        SizedBox(width: 8.0),
+                        buildButton("ln"),
+                        SizedBox(width: 8.0),
+                        buildButton("sqrt"),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  Offset _getTrigonometryButtonPosition() {
+    final RenderBox renderBox = _trigonometryKey.currentContext?.findRenderObject() as RenderBox;
+    return renderBox.localToGlobal(Offset.zero);
   }
 }
