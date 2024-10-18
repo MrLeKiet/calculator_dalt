@@ -644,24 +644,23 @@ class _CalculatorHomeState extends State<CalculatorHome> {
 
     if (function == "sin") {
       _output = (sin(radians))
-          .toStringAsFixed(2); // Sine calculation, format to 2 decimal places
+          .toString(); // Sine calculation, format to 2 decimal places
     } else if (function == "cos") {
       _output = (cos(radians))
-          .toStringAsFixed(2); // Cosine calculation, format to 2 decimal places
+          .toString(); // Cosine calculation, format to 2 decimal places
     } else if (function == "tan") {
       // Handle special cases for tan
       if (num1 == 90 || num1 == 270) {
         _output = "Undefined"; // Handle tan(90) and tan(270)
       } else {
-        _output = (tan(radians)).toStringAsFixed(
-            2); // Tangent calculation, format to 2 decimal places
+        _output = (tan(radians)).toString(); // Tangent calculation, format to 2 decimal places
       }
     } else if (function == "log") {
-      _output = (log(num1) / log(10)).toStringAsFixed(2); // Logarithm base 10
+      _output = (log(num1) / log(10)).toString(); // Logarithm base 10
     } else if (function == "ln") {
-      _output = log(num1).toStringAsFixed(2); // Natural logarithm
+      _output = log(num1).toString(); // Natural logarithm
     } else if (function == "sqrt") {
-      _output = sqrt(num1).toStringAsFixed(2); // Square root
+      _output = sqrt(num1).toString(); // Square root
     }
 
     expression =
