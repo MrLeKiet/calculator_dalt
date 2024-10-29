@@ -242,15 +242,36 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         : number.toString();
   }
 
+  // Widget buildButton(String buttonText,
+  //     {VoidCallback? onPressed, Key? key, bool isActive = false}) {
+  //   return Expanded(
+  //     child: ElevatedButton(
+  //       key: key,
+  //       onPressed: onPressed ?? () => buttonPressed(buttonText),
+  //       style: ElevatedButton.styleFrom(
+  //         backgroundColor:
+  //             isActive ? Colors.blue : null, // Highlight active button
+  //       ),
+  //       child: Text(buttonText,
+  //           style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold)),
+  //     ),
+  //   );
+  // }
   Widget buildButton(String buttonText,
-      {VoidCallback? onPressed, Key? key, bool isActive = false}) {
+      {VoidCallback? onPressed,
+      Key? key,
+      bool isActive = false,
+      bool isDisabled = false}) {
     return Expanded(
       child: ElevatedButton(
         key: key,
-        onPressed: onPressed ?? () => buttonPressed(buttonText),
+        onPressed:
+            isDisabled ? null : (onPressed ?? () => buttonPressed(buttonText)),
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              isActive ? Colors.blue : null, // Highlight active button
+          backgroundColor: isActive ? Colors.blue : null,
+          foregroundColor: isDisabled
+              ? Colors.grey
+              : Colors.white, // Màu chữ khi bị vô hiệu hóa
         ),
         child: Text(buttonText,
             style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold)),
@@ -334,6 +355,57 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         children: [
           Column(
             children: [
+              Row(
+                children: [
+                  buildButton("7", isDisabled: currentMode == 'BIN'),
+                  SizedBox(width: 4.0),
+                  buildButton("8",
+                      isDisabled: currentMode == 'BIN' || currentMode == 'OCT'),
+                  SizedBox(width: 4.0),
+                  buildButton("9",
+                      isDisabled: currentMode == 'BIN' || currentMode == 'OCT'),
+                  SizedBox(width: 4.0),
+                  buildButton("÷"),
+                ],
+              ),
+              SizedBox(height: 4.0),
+              Row(
+      children: [
+        buildButton("4", isDisabled: currentMode == 'BIN'),
+        SizedBox(width: 4.0),
+        buildButton("5", isDisabled: currentMode == 'BIN'),
+        SizedBox(width: 4.0),
+        buildButton("6", isDisabled: currentMode == 'BIN'),
+        SizedBox(width: 4.0),
+        buildButton("x"),
+      ],
+    ),
+    SizedBox(height: 4.0),
+    Row(
+      children: [
+        buildButton("1"),
+        SizedBox(width: 4.0),
+        buildButton("2", isDisabled: currentMode == 'BIN'),
+        SizedBox(width: 4.0),
+        buildButton("3", isDisabled: currentMode == 'BIN'),
+        SizedBox(width: 4.0),
+        buildButton("-"),
+      ],
+    ),
+    SizedBox(height: 4.0),
+    Row(
+      children: [
+        buildButton("."),
+        SizedBox(width: 4.0),
+        buildButton("0"),
+        SizedBox(width: 4.0),
+        buildButton("DEL"),
+        SizedBox(width: 4.0),
+        buildButton("+"),
+      ],
+    ),
+  ],
+),
               Container(
                 alignment: Alignment.centerRight,
                 padding: EdgeInsets.symmetric(
