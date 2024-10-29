@@ -37,6 +37,16 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   final GlobalKey _trigonometryKey = GlobalKey(); // Key for Trigonometry button
 
   buttonPressed(String buttonText) {
+    if (currentMode == 'BIN' &&
+        int.tryParse(buttonText) != null &&
+        int.parse(buttonText) > 1) {
+      return; // Không làm gì khi người dùng nhấn các nút không hợp lệ trong chế độ BIN
+    }
+    if (currentMode == 'OCT' &&
+        int.tryParse(buttonText) != null &&
+        int.parse(buttonText) > 7) {
+      return; // Không làm gì khi người dùng nhấn các nút không hợp lệ trong chế độ OCT
+    }
     // If output is "Undefined", prevent further input
     if (output == "Undefined" && buttonText != "CLEAR") {
       return; // Ignore all inputs except CLEAR
@@ -242,36 +252,25 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         : number.toString();
   }
 
-  // Widget buildButton(String buttonText,
-  //     {VoidCallback? onPressed, Key? key, bool isActive = false}) {
-  //   return Expanded(
-  //     child: ElevatedButton(
-  //       key: key,
-  //       onPressed: onPressed ?? () => buttonPressed(buttonText),
-  //       style: ElevatedButton.styleFrom(
-  //         backgroundColor:
-  //             isActive ? Colors.blue : null, // Highlight active button
-  //       ),
-  //       child: Text(buttonText,
-  //           style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold)),
-  //     ),
-  //   );
-  // }
   Widget buildButton(String buttonText,
-      {VoidCallback? onPressed,
-      Key? key,
-      bool isActive = false,
-      bool isDisabled = false}) {
+      {VoidCallback? onPressed, Key? key, bool isActive = false}) {
+    // Kiểm tra nếu nút cần bị disabled trong chế độ BIN và OCT
+    bool isDisabledInBinary = currentMode == 'BIN' &&
+        int.tryParse(buttonText) != null &&
+        int.parse(buttonText) > 1;
+    bool isDisabledInOctal = currentMode == 'OCT' &&
+        int.tryParse(buttonText) != null &&
+        int.parse(buttonText) > 7;
+
     return Expanded(
       child: ElevatedButton(
         key: key,
-        onPressed:
-            isDisabled ? null : (onPressed ?? () => buttonPressed(buttonText)),
+        onPressed: (isDisabledInBinary || isDisabledInOctal)
+            ? null
+            : onPressed ?? () => buttonPressed(buttonText),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isActive ? Colors.blue : null,
-          foregroundColor: isDisabled
-              ? Colors.grey
-              : Colors.white, // Màu chữ khi bị vô hiệu hóa
+          backgroundColor:
+              isActive ? Colors.blue : null, // Highlight active button
         ),
         child: Text(buttonText,
             style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold)),
@@ -284,6 +283,9 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       isScientific = type == 'Scientific'; // Toggle calculator type
       isProgrammer = type == 'Programmer'; // Toggle programmer mode
       showTrigonometry = false; // Reset trigonometry buttons visibility
+      if (!isProgrammer) {
+      currentMode = 'DEC'; // Reset current mode to DEC when not in Programmer mode
+    }
     });
     Navigator.pop(context); // Close the drawer
   }
@@ -355,57 +357,6 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         children: [
           Column(
             children: [
-              Row(
-                children: [
-                  buildButton("7", isDisabled: currentMode == 'BIN'),
-                  SizedBox(width: 4.0),
-                  buildButton("8",
-                      isDisabled: currentMode == 'BIN' || currentMode == 'OCT'),
-                  SizedBox(width: 4.0),
-                  buildButton("9",
-                      isDisabled: currentMode == 'BIN' || currentMode == 'OCT'),
-                  SizedBox(width: 4.0),
-                  buildButton("÷"),
-                ],
-              ),
-              SizedBox(height: 4.0),
-              Row(
-      children: [
-        buildButton("4", isDisabled: currentMode == 'BIN'),
-        SizedBox(width: 4.0),
-        buildButton("5", isDisabled: currentMode == 'BIN'),
-        SizedBox(width: 4.0),
-        buildButton("6", isDisabled: currentMode == 'BIN'),
-        SizedBox(width: 4.0),
-        buildButton("x"),
-      ],
-    ),
-    SizedBox(height: 4.0),
-    Row(
-      children: [
-        buildButton("1"),
-        SizedBox(width: 4.0),
-        buildButton("2", isDisabled: currentMode == 'BIN'),
-        SizedBox(width: 4.0),
-        buildButton("3", isDisabled: currentMode == 'BIN'),
-        SizedBox(width: 4.0),
-        buildButton("-"),
-      ],
-    ),
-    SizedBox(height: 4.0),
-    Row(
-      children: [
-        buildButton("."),
-        SizedBox(width: 4.0),
-        buildButton("0"),
-        SizedBox(width: 4.0),
-        buildButton("DEL"),
-        SizedBox(width: 4.0),
-        buildButton("+"),
-      ],
-    ),
-  ],
-),
               Container(
                 alignment: Alignment.centerRight,
                 padding: EdgeInsets.symmetric(
