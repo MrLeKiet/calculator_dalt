@@ -27,9 +27,12 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   String operand = ""; // Current operation
   String expression = ""; // Expression for display
   bool isScientific = false; // Track calculator type
+  bool isProgrammer = false; // Track programmer mode
   bool isResultDisplayed = false; // Flag to check if result is displayed
   bool isEqualPressed = false; // Prevent multiple equals presses
   bool showTrigonometry = false; // Track visibility of trigonometric buttons
+  String currentMode = 'DEC'; // Track current mode (HEX, DEC, OCT, BIN)
+  int currentValue = 0; // Store the current value for conversion
 
   final GlobalKey _trigonometryKey = GlobalKey(); // Key for Trigonometry button
 
@@ -47,13 +50,16 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       expression = ""; // Reset expression
       isResultDisplayed = false; // Reset result display flag
       isEqualPressed = false; // Reset equal flag
+      currentValue = 0; // Reset current value
     } else if (buttonText == "DEL") {
       if (_output.length > 1) {
         _output =
-            _output.substring(0, _output.length - 1); // Xóa ký tự cuối cùng
+            _output.substring(0, _output.length - 1); // Delete last character
       } else {
-        _output = "0"; // Nếu chỉ còn 1 ký tự, đặt lại thành 0
+        _output = "0"; // If only one character left, reset to 0
       }
+      currentValue =
+          int.tryParse(_output, radix: getRadix()) ?? 0; // Update current value
     } else if (buttonText == "+" ||
         buttonText == "-" ||
         buttonText == "÷" ||
@@ -92,6 +98,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       if (!isResultDisplayed) {
         num2 = double.tryParse(output) ?? 0; // Get the last number safely
         if (operand.isEmpty) {
+          // Corrected condition
           return; // If no operand is set, do nothing on equals press
         }
         calculateResult(); // Calculate the final result
@@ -100,7 +107,13 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         isEqualPressed = true; // Prevent multiple equals presses
       }
     } else if (isScientific &&
-        (buttonText == "sin" || buttonText == "cos" || buttonText == "tan" || buttonText == "log" || buttonText == "ln" || buttonText == "sqrt")) {
+        (buttonText == "sin" ||
+            buttonText == "cos" ||
+            buttonText == "tan" ||
+            buttonText == "log" ||
+            buttonText == "ln" ||
+            buttonText == "√" ||
+            buttonText == "π")) {
       num1 = double.tryParse(output) ??
           0; // Get current output for trigonometric functions
       calculateTrigonometric(buttonText); // Calculate the trigonometric result
@@ -108,6 +121,18 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       setState(() {
         showTrigonometry = false; // Close the overlay
       });
+    } else if (isProgrammer &&
+        (buttonText == "A" ||
+            buttonText == "B" ||
+            buttonText == "C" ||
+            buttonText == "D" ||
+            buttonText == "E" ||
+            buttonText == "F")) {
+      if (currentMode == 'HEX') {
+        _output = _output + buttonText; // Append HEX characters
+      }
+      currentValue =
+          int.tryParse(_output, radix: 16) ?? 0; // Update current value
     } else {
       // If result was displayed and a new number is pressed, reset the output
       if (isResultDisplayed || isEqualPressed) {
@@ -122,12 +147,27 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       } else {
         _output = _output + buttonText; // Append the number
       }
+      currentValue =
+          int.tryParse(_output, radix: getRadix()) ?? 0; // Update current value
       isResultDisplayed = false; // Reset the result display flag
     }
 
     setState(() {
       output = _output; // Update displayed output
     });
+  }
+
+  int getRadix() {
+    switch (currentMode) {
+      case 'HEX':
+        return 16;
+      case 'OCT':
+        return 8;
+      case 'BIN':
+        return 2;
+      default:
+        return 10;
+    }
   }
 
   void calculateResult() {
@@ -160,6 +200,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
     num1 = result; // Store result for further calculations
     num2 = 0.0; // Reset num2 for the next operation
     operand = ""; // Reset operator
+    currentValue = result.toInt(); // Update current value
   }
 
   void calculateTrigonometric(String function) {
@@ -177,14 +218,17 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       if (num1 == 90 || num1 == 270) {
         _output = "Undefined"; // Handle tan(90) and tan(270)
       } else {
-        _output = (tan(radians)).toString(); // Tangent calculation, format to 2 decimal places
+        _output = (tan(radians))
+            .toString(); // Tangent calculation, format to 2 decimal places
       }
     } else if (function == "log") {
       _output = (log(num1) / log(10)).toString(); // Logarithm base 10
     } else if (function == "ln") {
       _output = log(num1).toString(); // Natural logarithm
-    } else if (function == "sqrt") {
+    } else if (function == "√") {
       _output = sqrt(num1).toString(); // Square root
+    } else if (function == "π") {
+      _output = pi.toString(); // Pi value
     }
 
     expression =
@@ -198,13 +242,18 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         : number.toString();
   }
 
-  Widget buildButton(String buttonText, {VoidCallback? onPressed, Key? key}) {
+  Widget buildButton(String buttonText,
+      {VoidCallback? onPressed, Key? key, bool isActive = false}) {
     return Expanded(
       child: ElevatedButton(
         key: key,
         onPressed: onPressed ?? () => buttonPressed(buttonText),
+        style: ElevatedButton.styleFrom(
+          backgroundColor:
+              isActive ? Colors.blue : null, // Highlight active button
+        ),
         child: Text(buttonText,
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+            style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -212,6 +261,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   void toggleCalculatorType(String type) {
     setState(() {
       isScientific = type == 'Scientific'; // Toggle calculator type
+      isProgrammer = type == 'Programmer'; // Toggle programmer mode
       showTrigonometry = false; // Reset trigonometry buttons visibility
     });
     Navigator.pop(context); // Close the drawer
@@ -223,11 +273,21 @@ class _CalculatorHomeState extends State<CalculatorHome> {
     });
   }
 
+  void changeMode(String mode) {
+    setState(() {
+      currentMode = mode; // Change current mode
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isScientific ? 'Scientific' : 'Standard'),
+        title: Text(isScientific
+            ? 'Scientific'
+            : isProgrammer
+                ? 'Programmer'
+                : 'Standard'),
       ),
       drawer: Drawer(
         child: ListView(
@@ -261,6 +321,12 @@ class _CalculatorHomeState extends State<CalculatorHome> {
               onTap: () => toggleCalculatorType(
                   'Scientific'), // Change to Scientific mode
             ),
+            ListTile(
+              leading: Icon(Icons.code),
+              title: Text('Programmer', style: TextStyle(fontSize: 18)),
+              onTap: () => toggleCalculatorType(
+                  'Programmer'), // Change to Programmer mode
+            ),
           ],
         ),
       ),
@@ -271,123 +337,218 @@ class _CalculatorHomeState extends State<CalculatorHome> {
               Container(
                 alignment: Alignment.centerRight,
                 padding: EdgeInsets.symmetric(
-                    vertical: 4.0, horizontal: 12.0), // Reduced vertical padding
+                    vertical: 4.0,
+                    horizontal: 12.0), // Reduced vertical padding
                 child: Text(expression,
-                    style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
               ),
               Container(
                 alignment: Alignment.centerRight,
                 padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
                 child: Text(output,
-                    style: TextStyle(fontSize: 48.0, fontWeight: FontWeight.bold)),
+                    style:
+                        TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold)),
               ),
+              if (isProgrammer) ...[
+                Flexible(
+                  child: Container(
+                    alignment: Alignment.centerLeft,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        buildButton(
+                            "HEX: ${currentValue.toRadixString(16).toUpperCase()}",
+                            onPressed: () => changeMode('HEX'),
+                            isActive: currentMode == 'HEX'),
+                        buildButton("DEC: ${currentValue}",
+                            onPressed: () => changeMode('DEC'),
+                            isActive: currentMode == 'DEC'),
+                        buildButton("OCT: ${currentValue.toRadixString(8)}",
+                            onPressed: () => changeMode('OCT'),
+                            isActive: currentMode == 'OCT'),
+                        buildButton("BIN: ${currentValue.toRadixString(2)}",
+                            onPressed: () => changeMode('BIN'),
+                            isActive: currentMode == 'BIN'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               Expanded(
                 child: Divider(),
               ),
               if (isScientific) ...[
                 Row(
                   children: [
-                    buildButton("Trigonometry", onPressed: toggleTrigonometry, key: _trigonometryKey),
+                    Expanded(
+                      child: ElevatedButton(
+                        key: _trigonometryKey,
+                        onPressed: toggleTrigonometry,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: showTrigonometry
+                              ? Colors.blue
+                              : null, // Highlight active button
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Trigonometry",
+                              style: TextStyle(
+                                  fontSize: 15.0, fontWeight: FontWeight.bold),
+                            ),
+                            Icon(
+                              showTrigonometry
+                                  ? Icons.arrow_drop_up
+                                  : Icons.arrow_drop_down,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 4.0),
+                    Container(
+                      width: 80.0, // Set the width of the π button
+                      child: ElevatedButton(
+                        onPressed: () => buttonPressed("π"),
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.all(0), // Remove padding
+                        ),
+                        child: Text(
+                          "π",
+                          style: TextStyle(
+                              fontSize: 15.0, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                if (showTrigonometry) ...[
-                ],
+              ],
+              if (isProgrammer && currentMode == 'HEX') ...[
+                Row(
+                  children: [
+                    buildButton("A"),
+                    SizedBox(width: 4.0),
+                    buildButton("B"),
+                    SizedBox(width: 4.0),
+                    buildButton("C"),
+                    SizedBox(width: 4.0),
+                    buildButton("D"),
+                    SizedBox(width: 4.0),
+                    buildButton("E"),
+                    SizedBox(width: 4.0),
+                    buildButton("F"),
+                  ],
+                ),
               ],
               Column(
                 children: [
-                  SizedBox(height: 8.0),
                   Row(
                     children: [
                       buildButton("7"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("8"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("9"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("÷"),
                     ],
                   ),
-                  SizedBox(height: 8.0),
+                  SizedBox(height: 4.0),
                   Row(
                     children: [
                       buildButton("4"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("5"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("6"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("x"),
                     ],
                   ),
-                  SizedBox(height: 8.0),
+                  SizedBox(height: 4.0),
                   Row(
                     children: [
                       buildButton("1"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("2"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("3"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("-"),
                     ],
                   ),
-                  SizedBox(height: 8.0),
+                  SizedBox(height: 4.0),
                   Row(
                     children: [
                       buildButton("."),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("0"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("DEL"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("+"),
                     ],
                   ),
-                  SizedBox(height: 8.0),
+                  SizedBox(height: 4.0),
                   Row(
                     children: [
                       buildButton("CLEAR"),
-                      SizedBox(width: 8.0),
+                      SizedBox(width: 4.0),
                       buildButton("="),
                     ],
                   ),
-                  SizedBox(height: 8.0), // Bottom gap for CLEAR and = buttons
+                  SizedBox(height: 4.0), // Bottom gap for CLEAR and = buttons
                 ],
               ),
             ],
           ),
           if (showTrigonometry)
             Positioned(
-              top: _getTrigonometryButtonPosition().dy - 18, // Adjust the position as needed
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 105.0, // Height of the overlay
-                color: const Color.fromARGB(255, 254, 247, 255),
-                // color: Colors.white,
-                child: Column(
-                  children: [
-                    SizedBox(height: 0.0),
-                    Row(
-                      children: [
-                        buildButton("sin"),
-                        SizedBox(width: 8.0),
-                        buildButton("cos"),
-                        SizedBox(width: 8.0),
-                        buildButton("tan"),
-                      ],
-                    ),
-                    SizedBox(height: 4.0),
-                    Row(
-                      children: [
-                        buildButton("log"),
-                        SizedBox(width: 8.0),
-                        buildButton("ln"),
-                        SizedBox(width: 8.0),
-                        buildButton("sqrt"),
-                      ],
+              top: _getTrigonometryButtonPosition().dy -
+                  30, // Adjust the position as needed
+              left: 5.0, // Move to the right by 5.0
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                      offset: Offset(0, 3), // changes position of shadow
                     ),
                   ],
+                ),
+                child: Container(
+                  height: 105.0, // Height of the overlay
+                  width: 300.0, // Set the desired width here
+                  color: const Color.fromARGB(255, 254, 247, 255),
+                  // color: Colors.white,
+                  child: Column(
+                    children: [
+                      SizedBox(height: 0.0),
+                      Row(
+                        children: [
+                          buildButton("sin"),
+                          SizedBox(width: 4.0),
+                          buildButton("cos"),
+                          SizedBox(width: 4.0),
+                          buildButton("tan"),
+                        ],
+                      ),
+                      SizedBox(height: 4.0),
+                      Row(
+                        children: [
+                          buildButton("log"),
+                          SizedBox(width: 4.0),
+                          buildButton("ln"),
+                          SizedBox(width: 4.0),
+                          buildButton("√"),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -397,7 +558,8 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   }
 
   Offset _getTrigonometryButtonPosition() {
-    final RenderBox renderBox = _trigonometryKey.currentContext?.findRenderObject() as RenderBox;
+    final RenderBox renderBox =
+        _trigonometryKey.currentContext?.findRenderObject() as RenderBox;
     return renderBox.localToGlobal(Offset.zero);
   }
 }
