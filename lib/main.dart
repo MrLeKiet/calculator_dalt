@@ -1,8 +1,10 @@
 import 'dart:math'; // Import this for mathematical functions
-
+import 'package:flutter/services.dart'; // Import này để sử dụng KeyboardListener
 import 'package:flutter/material.dart';
 
 void main() => runApp(CalculatorApp());
+
+
 
 class CalculatorApp extends StatelessWidget {
   @override
@@ -283,6 +285,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       isScientific = type == 'Scientific'; // Toggle calculator type
       isProgrammer = type == 'Programmer'; // Toggle programmer mode
       showTrigonometry = false; // Reset trigonometry buttons visibility
+
       if (!isProgrammer) {
       currentMode = 'DEC'; // Reset current mode to DEC when not in Programmer mode
     }
