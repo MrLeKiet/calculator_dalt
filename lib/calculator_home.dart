@@ -53,7 +53,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       } else if (buttonText == "+" ||
           buttonText == "-" ||
           buttonText == "x" ||
-          buttonText == "÷") {
+          buttonText == "÷" ) {
         if (operand.isEmpty) {
           num1 = _parseInput(_output);
           operand = buttonText;
@@ -61,8 +61,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           _output = "";
         } else {
           calculateResult();
-          num1 = _parseInput(
-              output); // Update num1 to the result of the previous operation
+          num1 = _parseInput(output); // Update num1 to the result of the previous operation
           operand = buttonText;
           expression = _formatNumber(num1) + " " + buttonText;
           _output = "";
@@ -71,8 +70,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           buttonText == "cos" ||
           buttonText == "tan" ||
           buttonText == "log" ||
-          buttonText == "ln" ||
-          buttonText == "√") {
+          buttonText == "ln" ) {
         calculateTrigonometric(buttonText);
       } else if (buttonText == "π") {
         if (isResultDisplayed) {
@@ -87,7 +85,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         }
         output = _output;
         currentValue = double.parse(fullPi);
+      }else if (buttonText == "√") {
+      if (_output.isNotEmpty) {
+        calculateTrigonometric(buttonText);
       } else {
+        operand = buttonText;
+        expression = "√";
+        _output = "";
+      }}else {
         if (isResultDisplayed) {
           _output = buttonText;
           isResultDisplayed = false;
@@ -146,6 +151,9 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         case "÷":
           _output = _formatNumber(num1 / num2);
           break;
+        case "√":
+          _output = _formatNumber(num1 + sqrt(num2)); // Cộng với căn bậc hai của num2
+        break;
       }
       expression += " " + _formatNumber(num2);
       output = _output;
