@@ -111,6 +111,10 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       return int.parse(input, radix: 8).toDouble();
     } else if (currentMode == 'BIN') {
       return int.parse(input, radix: 2).toDouble();
+    } else if (input == "Infinity" ||
+        input == "Error: Division by zero" ||
+        input == "Error") {
+      throw FormatException("Invalid input");
     } else {
       return double.parse(input);
     }
@@ -132,27 +136,34 @@ class _CalculatorHomeState extends State<CalculatorHome> {
 
   void calculateResult() {
     setState(() {
-      num2 = _parseInput(_output);
-      switch (operand) {
-        case "+":
-          _output = _formatNumber(num1 + num2);
-          break;
-        case "-":
-          _output = _formatNumber(num1 - num2);
-          break;
-        case "x":
-          _output = _formatNumber(num1 * num2);
-          break;
-        case "÷":
-          _output = _formatNumber(num1 / num2);
-          break;
+      try {
+        num2 = _parseInput(_output);
+        switch (operand) {
+          case "+":
+            _output = _formatNumber(num1 + num2);
+            break;
+          case "-":
+            _output = _formatNumber(num1 - num2);
+            break;
+          case "x":
+            _output = _formatNumber(num1 * num2);
+            break;
+          case "÷":
+            if (num2 == 0) {
+              _output = "Infinity";
+            } else {
+              _output = _formatNumber(num1 / num2);
+            }
+            break;
+        }
+        output = _output;
+        currentValue = _parseInput(_output);
+        isResultDisplayed = true;
+        isEqualPressed = true;
+        operand = "";
+      } catch (e) {
+        _output = "Error";
       }
-      expression += " " + _formatNumber(num2);
-      output = _output;
-      currentValue = _parseInput(_output);
-      isResultDisplayed = true;
-      isEqualPressed = true;
-      operand = "";
     });
   }
 
@@ -172,50 +183,50 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       switch (function) {
         case "sin":
           result = sin(value * pi / 180); // Convert degrees to radians
-          expression = "sin(" + valueStr + ")";
+          expression += "sin(" + valueStr + ")";
           break;
         case "cos":
           result = cos(value * pi / 180); // Convert degrees to radians
-          expression = "cos(" + valueStr + ")";
+          expression += "cos(" + valueStr + ")";
           break;
         case "tan":
           if (value % 180 == 90) {
             // Check for undefined tan values
             isValid = false;
-            expression = "tan(" + valueStr + ")";
+            expression += "tan(" + valueStr + ")";
           } else {
             result = tan(value * pi / 180); // Convert degrees to radians
-            expression = "tan(" + valueStr + ")";
+            expression += "tan(" + valueStr + ")";
           }
           break;
         case "log":
           if (value <= 0) {
             // Check for invalid log values
             isValid = false;
-            expression = "log(" + valueStr + ")";
+            expression += "log(" + valueStr + ")";
           } else {
             result = log(value) / log(10); // Log base 10
-            expression = "log(" + valueStr + ")";
+            expression += "log(" + valueStr + ")";
           }
           break;
         case "ln":
           if (value <= 0) {
             // Check for invalid ln values
             isValid = false;
-            expression = "ln(" + valueStr + ")";
+            expression += "ln(" + valueStr + ")";
           } else {
             result = log(value); // Natural log
-            expression = "ln(" + valueStr + ")";
+            expression += "ln(" + valueStr + ")";
           }
           break;
         case "√":
           if (value < 0) {
             // Check for invalid sqrt values
             isValid = false;
-            expression = "√(" + valueStr + ")";
+            expression += "√(" + valueStr + ")";
           } else {
             result = sqrt(value); // Square root
-            expression = "√(" + valueStr + ")";
+            expression += "√(" + valueStr + ")";
           }
           break;
       }
@@ -229,9 +240,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         _output = "Invalid input";
       }
       output = _output;
-      currentValue = _parseInput(_output);
+      // currentValue = _parseInput(_output);
       isResultDisplayed = true;
     });
+  }
+
+// Example button press handler
+  void onTrigonometricButtonPressed(String function) {
+    calculateTrigonometric(function);
   }
 
   String _formatResult(double result) {
