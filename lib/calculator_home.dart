@@ -156,6 +156,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
             }
             break;
         }
+
         output = _output;
         currentValue = _parseInput(_output);
         isResultDisplayed = true;

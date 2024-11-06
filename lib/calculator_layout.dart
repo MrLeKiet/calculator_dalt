@@ -27,7 +27,6 @@ class CalculatorLayout extends StatefulWidget {
     required this.buttonPressed,
     required this.toggleTrigonometry,
     required this.changeMode,
-    
   });
 
   @override
@@ -95,10 +94,8 @@ class _CalculatorLayoutState extends State<CalculatorLayout> {
                   Container(
                     alignment: Alignment.centerRight,
                     padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
-                    // child: Text(widget.expression,
-                    //     style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
-                    child: Text('${widget.expression} =',  // Thêm dấu "=" vào cuối biểu thức
-                           style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+                    child: Text(widget.expression,
+                        style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
                   ),
                   Container(
                     alignment: Alignment.centerRight,
