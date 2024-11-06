@@ -14,6 +14,7 @@ const String fullPi = "3.1415926535897932384626433832795";
 class _CalculatorHomeState extends State<CalculatorHome> {
   String output = "0";
   String _output = "0";
+  String _lastOutput = "0"; // Add this variable to store the last output value
   double num1 = 0.0;
   double num2 = 0.0;
   String operand = "";
@@ -33,6 +34,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       if (buttonText == "CLEAR") {
         output = "0";
         _output = "0";
+        _lastOutput = "0"; // Reset the last output value
         num1 = 0.0;
         num2 = 0.0;
         operand = "";
@@ -49,7 +51,15 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         output = _output;
         currentValue = _parseInput(_output);
       } else if (buttonText == "=") {
-        calculateResult();
+        if (!isEqualPressed) {
+          if (operand.isNotEmpty) {
+            calculateResult();
+            expression += " ="; // Update expression with the result
+          } else if (expression.contains("sin") || expression.contains("cos") || expression.contains("tan") || expression.contains("log") || expression.contains("ln") || expression.contains("√")) {
+            expression += " ="; // Update expression for trigonometric functions
+          }
+          isEqualPressed = true;
+        }
       } else if (buttonText == "+" ||
           buttonText == "-" ||
           buttonText == "x" ||
@@ -61,18 +71,34 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           _output = "";
         } else {
           calculateResult();
-          num1 = _parseInput(
-              output); // Update num1 to the result of the previous operation
+          num1 = _parseInput(output); // Update num1 to the result of the previous operation
           operand = buttonText;
           expression = _formatNumber(num1) + " " + buttonText;
           _output = "";
         }
+        isEqualPressed = false; // Reset isEqualPressed when an operand is pressed
       } else if (buttonText == "sin" ||
           buttonText == "cos" ||
           buttonText == "tan" ||
           buttonText == "log" ||
-          buttonText == "ln" ||
-          buttonText == "√") {
+          buttonText == "ln") {
+        // Store the last output value before updating the expression
+        _lastOutput = _output;
+        // Update expression for trigonometric functions with degree symbol
+        if (operand.isNotEmpty) {
+          expression = expression.substring(0, expression.lastIndexOf(operand) + 1) + " $buttonText(${_lastOutput}°)";
+        } else {
+          expression = "$buttonText(${_lastOutput}°)";
+        }
+        calculateTrigonometric(buttonText);
+      } else if (buttonText == "√") {
+        // Handle square root separately without degree symbol
+        _lastOutput = _output;
+        if (operand.isNotEmpty) {
+          expression = expression.substring(0, expression.lastIndexOf(operand) + 1) + " $buttonText($_lastOutput)";
+        } else {
+          expression = "$buttonText($_lastOutput)";
+        }
         calculateTrigonometric(buttonText);
       } else if (buttonText == "π") {
         if (isResultDisplayed) {
@@ -100,6 +126,13 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         }
         output = _output;
         currentValue = _parseInput(_output);
+        // Update expression with the current number
+        if (operand.isNotEmpty) {
+          expression += " " + buttonText;
+        } else {
+          expression = buttonText;
+        }
+        isEqualPressed = false; // Reset isEqualPressed when a number is pressed
       }
     });
   }
@@ -160,7 +193,6 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         output = _output;
         currentValue = _parseInput(_output);
         isResultDisplayed = true;
-        isEqualPressed = true;
         operand = "";
       } catch (e) {
         _output = "Error";
@@ -176,58 +208,48 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         value = double.parse(fullPi);
         valueStr = fullPi;
       } else {
-        value = double.parse(_output);
-        valueStr = _output;
+        value = double.parse(_lastOutput); // Use _lastOutput instead of _output
+        valueStr = _lastOutput; // Use _lastOutput instead of _output
       }
       double result = 0.0; // Initialize result with a default value
       bool isValid = true; // Flag to check if the input is valid
       switch (function) {
         case "sin":
           result = sin(value * pi / 180); // Convert degrees to radians
-          expression += "sin(" + valueStr + ")";
           break;
         case "cos":
           result = cos(value * pi / 180); // Convert degrees to radians
-          expression += "cos(" + valueStr + ")";
           break;
         case "tan":
           if (value % 180 == 90) {
             // Check for undefined tan values
             isValid = false;
-            expression += "tan(" + valueStr + ")";
           } else {
             result = tan(value * pi / 180); // Convert degrees to radians
-            expression += "tan(" + valueStr + ")";
           }
           break;
         case "log":
           if (value <= 0) {
             // Check for invalid log values
             isValid = false;
-            expression += "log(" + valueStr + ")";
           } else {
             result = log(value) / log(10); // Log base 10
-            expression += "log(" + valueStr + ")";
           }
           break;
         case "ln":
           if (value <= 0) {
             // Check for invalid ln values
             isValid = false;
-            expression += "ln(" + valueStr + ")";
           } else {
             result = log(value); // Natural log
-            expression += "ln(" + valueStr + ")";
           }
           break;
         case "√":
           if (value < 0) {
             // Check for invalid sqrt values
             isValid = false;
-            expression += "√(" + valueStr + ")";
           } else {
             result = sqrt(value); // Square root
-            expression += "√(" + valueStr + ")";
           }
           break;
       }
@@ -246,7 +268,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
     });
   }
 
-// Example button press handler
+  // Example button press handler
   void onTrigonometricButtonPressed(String function) {
     calculateTrigonometric(function);
   }
