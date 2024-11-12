@@ -14,7 +14,8 @@ class CalculatorLayout extends StatefulWidget {
   final Function(String) buttonPressed;
   final Function toggleTrigonometry;
   final Function(String) changeMode;
-
+final bool isDegree;
+final Function(bool) onDegreeChange;
   CalculatorLayout({
     required this.isScientific,
     required this.isProgrammer,
@@ -27,6 +28,8 @@ class CalculatorLayout extends StatefulWidget {
     required this.buttonPressed,
     required this.toggleTrigonometry,
     required this.changeMode,
+    required this.isDegree,
+  required this.onDegreeChange,
   });
 
   @override
@@ -163,6 +166,43 @@ class _CalculatorLayoutState extends State<CalculatorLayout> {
               alignment: Alignment.bottomCenter,
               child: Column(
                 children: [
+                  if (widget.isScientific) ...[
+                  Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    ElevatedButton(
+      onPressed: () {
+        widget.onDegreeChange(true); // Chọn "Degree"
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: widget.isDegree ? Colors.blue : Colors.grey,
+      ),
+      child: Text(
+        "Deg",
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+    SizedBox(width: 8.0),
+    ElevatedButton(
+      onPressed: () {
+        widget.onDegreeChange(false); // Chọn "Radian"
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: !widget.isDegree ? Colors.blue : Colors.grey,
+      ),
+      child: Text(
+        "Rad",
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  ],
+),],
                   if (widget.isScientific) ...[
                     Row(
                       children: [
