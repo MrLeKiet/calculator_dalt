@@ -23,6 +23,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   bool isProgrammer = false;
   bool isResultDisplayed = false;
   bool isEqualPressed = false;
+  bool isPiPressed = false;
   bool showTrigonometry = false;
   String currentMode = 'DEC';
   double currentValue = 0.0;
@@ -43,6 +44,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         isResultDisplayed = false;
         isEqualPressed = false;
         currentValue = 0.0;
+        isPiPressed = false;
       } else if (buttonText == "DEL") {
         if (_output.length > 1) {
           _output = _output.substring(0, _output.length - 1);
@@ -51,16 +53,25 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         }
         output = _output;
         currentValue = _parseInput(_output);
+        isPiPressed = false;
       } else if (buttonText == "=") {
         if (!isEqualPressed) {
           if (operand.isNotEmpty) {
+            expression +=
+                _output; // Append the second operand to the expression
             calculateResult();
             expression += " ="; // Update expression with the result
-          } else if (expression.contains("sin") || expression.contains("cos") || expression.contains("tan") || expression.contains("log") || expression.contains("ln") || expression.contains("√")) {
+          } else if (expression.contains("sin") ||
+              expression.contains("cos") ||
+              expression.contains("tan") ||
+              expression.contains("log") ||
+              expression.contains("ln") ||
+              expression.contains("√")) {
             expression += " ="; // Update expression for trigonometric functions
           }
           isEqualPressed = true;
         }
+        isPiPressed = false;
       } else if (buttonText == "+" ||
           buttonText == "-" ||
           buttonText == "x" ||
@@ -68,16 +79,19 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         if (operand.isEmpty) {
           num1 = _parseInput(_output);
           operand = buttonText;
-          expression = _formatNumber(num1) + " " + buttonText;
+          expression = _formatNumber(num1) + " " + buttonText + " ";
           _output = "";
         } else {
           calculateResult();
-          num1 = _parseInput(output); // Update num1 to the result of the previous operation
+          num1 = _parseInput(
+              output); // Update num1 to the result of the previous operation
           operand = buttonText;
-          expression = _formatNumber(num1) + " " + buttonText;
+          expression = _formatNumber(num1) + " " + buttonText + " ";
           _output = "";
         }
-        isEqualPressed = false; // Reset isEqualPressed when an operand is pressed
+        isEqualPressed =
+            false; // Reset isEqualPressed when an operand is pressed
+        isPiPressed = false;
       } else if (buttonText == "sin" ||
           buttonText == "cos" ||
           buttonText == "tan" ||
@@ -85,42 +99,49 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           buttonText == "ln") {
         // Store the last output value before updating the expression
         _lastOutput = _output;
-        
-        String degreeSymbol = isDegree ? "°" : "";  // Add degree symbol conditionally
+
+        String degreeSymbol =
+            isDegree ? "°" : ""; // Add degree symbol conditionally
 
         // Update expression for trigonometric functions with degree symbol
-        if (operand.isNotEmpty ) {
-          expression = expression.substring(0, expression.lastIndexOf(operand) + 1) + " $buttonText(${_lastOutput}$degreeSymbol)";
+        if (operand.isNotEmpty) {
+          expression =
+              expression.substring(0, expression.lastIndexOf(operand) + 1) +
+                  " $buttonText(${_lastOutput}$degreeSymbol)";
         } else {
           expression = "$buttonText(${_lastOutput}$degreeSymbol)";
         }
         calculateTrigonometric(buttonText);
+        isPiPressed = false;
       } else if (buttonText == "√") {
         // Handle square root separately without degree symbol
         _lastOutput = _output;
         if (operand.isNotEmpty) {
-          expression = expression.substring(0, expression.lastIndexOf(operand) + 1) + " $buttonText($_lastOutput)";
+          expression =
+              expression.substring(0, expression.lastIndexOf(operand) + 1) +
+                  " $buttonText($_lastOutput)";
         } else {
           expression = "$buttonText($_lastOutput)";
         }
         calculateTrigonometric(buttonText);
+        isPiPressed = false;
       } else if (buttonText == "π") {
-        if (isResultDisplayed) {
-          _output = fullPi;
-          isResultDisplayed = false;
+        if (isDegree) {
+          // Nếu đang ở chế độ Degree, gán giá trị π = 180
+          _output = "180";
+          currentValue = 180.0;
         } else {
-          if (_output == "0") {
-            _output = fullPi;
-          } else {
-            _output += fullPi;
-          }
+          // Nếu đang ở chế độ Radian, gán giá trị π = 3.14159...
+          _output = fullPi;
+          currentValue = double.parse(fullPi);
         }
         output = _output;
-        currentValue = double.parse(fullPi);
+        isPiPressed = true;
       } else {
-        if (isResultDisplayed) {
+        if (isResultDisplayed || isPiPressed) {
           _output = buttonText;
           isResultDisplayed = false;
+          isPiPressed = false;
         } else {
           if (_output == "0") {
             _output = buttonText;
@@ -130,12 +151,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         }
         output = _output;
         currentValue = _parseInput(_output);
-        // Update expression with the current number
-        if (operand.isNotEmpty) {
-          expression += " " + buttonText;
-        } else {
-          expression = buttonText;
-        }
+        // Do not update expression when a number is pressed
         isEqualPressed = false; // Reset isEqualPressed when a number is pressed
       }
     });
@@ -217,41 +233,26 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       }
       double result = 0.0; // Initialize result with a default value
       bool isValid = true; // Flag to check if the input is valid
-      
-    // Chuyển đổi giữa độ và radian dựa trên chế độ hiện tại
-    double angle = isDegree ? value * pi / 180 : value;
+
+      // Chuyển đổi giữa độ và radian dựa trên chế độ hiện tại
+      double angle = isDegree ? value * pi / 180 : value;
 
       switch (function) {
-        // case "sin":
-        //   result = sin(value * pi / 180); // Convert degrees to radians
-        //   break;
-        // case "cos":
-        //   result = cos(value * pi / 180); // Convert degrees to radians
-        //   break;
-        // case "tan":
-        //   if (value % 180 == 90) {
-        //     // Check for undefined tan values
-        //     isValid = false;
-        //   } else {
-        //     result = tan(value * pi / 180); // Convert degrees to radians
-        //   }
-        //   break;
         case "sin":
-        result = sin(angle);
-        break;
-      case "cos":
-        result = cos(angle);
-        break;
-      case "tan":
-        if (value % 180 == 90 && isDegree) {
-          isValid = false;
-        } else {
-          result = tan(angle);
-        }
-        break;
+          result = sin(angle);
+          break;
+        case "cos":
+          result = cos(angle);
+          break;
+        case "tan":
+          if (value % 180 == 90 && isDegree) {
+            isValid = false;
+          } else {
+            result = tan(angle);
+          }
+          break;
         case "log":
           if (value <= 0) {
-            // Check for invalid log values
             isValid = false;
           } else {
             result = log(value) / log(10); // Log base 10
@@ -259,7 +260,6 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           break;
         case "ln":
           if (value <= 0) {
-            // Check for invalid ln values
             isValid = false;
           } else {
             result = log(value); // Natural log
@@ -267,7 +267,6 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           break;
         case "√":
           if (value < 0) {
-            // Check for invalid sqrt values
             isValid = false;
           } else {
             result = sqrt(value); // Square root
@@ -284,14 +283,8 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         _output = "Invalid input";
       }
       output = _output;
-      // currentValue = _parseInput(_output);
       isResultDisplayed = true;
     });
-  }
-
-  // Example button press handler
-  void onTrigonometricButtonPressed(String function) {
-    calculateTrigonometric(function);
   }
 
   String _formatResult(double result) {
@@ -322,78 +315,113 @@ class _CalculatorHomeState extends State<CalculatorHome> {
 
   void changeMode(String mode) {
     setState(() {
-      currentMode = mode;
-      output = _formatNumber(currentValue);
+      if (currentMode != mode) {
+        try {
+          if (currentMode == 'HEX') {
+            currentValue = int.parse(_output, radix: 16).toDouble();
+          } else if (currentMode == 'OCT') {
+            currentValue = int.parse(_output, radix: 8).toDouble();
+          } else if (currentMode == 'BIN') {
+            currentValue = int.parse(_output, radix: 2).toDouble();
+          } else {
+            currentValue = double.parse(_output);
+          }
+
+          if (mode == 'HEX') {
+            output = currentValue.toInt().toRadixString(16).toUpperCase();
+          } else if (mode == 'OCT') {
+            output = currentValue.toInt().toRadixString(8);
+          } else if (mode == 'BIN') {
+            output = currentValue.toInt().toRadixString(2);
+          } else {
+            output = currentValue.toInt().toString();
+          }
+        } catch (e) {
+          output = "0"; // Default value if parsing fails
+        }
+        _output = output;
+        currentMode = mode;
+      }
     });
+  }
+
+  void _hideTrigonometryPanel() {
+    if (showTrigonometry) {
+      setState(() {
+        showTrigonometry = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(isScientific
-            ? 'Scientific'
-            : isProgrammer
-                ? 'Programmer'
-                : 'Standard'),
-        
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                image: DecorationImage(
-                  image: AssetImage('assets/drawer_header_background.png'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Text(
-                'Calculator Type',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.calculate),
-              title: Text('Standard', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Standard'),
-            ),
-            ListTile(
-              leading: Icon(Icons.science),
-              title: Text('Scientific', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Scientific'),
-            ),
-            ListTile(
-              leading: Icon(Icons.code),
-              title: Text('Programmer', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Programmer'),
-            ),
-          ],
+    return GestureDetector(
+      onTap: _hideTrigonometryPanel,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(isScientific
+              ? 'Scientific'
+              : isProgrammer
+                  ? 'Programmer'
+                  : 'Standard'),
         ),
-      ),
-      body: CalculatorLayout(
-        isScientific: isScientific,
-        isProgrammer: isProgrammer,
-        showTrigonometry: showTrigonometry,
-        expression: expression,
-        output: output,
-        currentMode: currentMode,
-        currentValue: currentValue.toInt(), // Convert to int
-        trigonometryKey: _trigonometryKey,
-        buttonPressed: buttonPressed,
-        toggleTrigonometry: toggleTrigonometry,
-        changeMode: changeMode,
-        isDegree: isDegree,
-        onDegreeChange: (value) {
-          setState(() {
-            isDegree = value;
-          });
-        },
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  image: DecorationImage(
+                    image: AssetImage('assets/drawer_header_background.png'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Text(
+                  'Calculator Type',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.calculate),
+                title: Text('Standard', style: TextStyle(fontSize: 18)),
+                onTap: () => toggleCalculatorType('Standard'),
+              ),
+              ListTile(
+                leading: Icon(Icons.science),
+                title: Text('Scientific', style: TextStyle(fontSize: 18)),
+                onTap: () => toggleCalculatorType('Scientific'),
+              ),
+              ListTile(
+                leading: Icon(Icons.code),
+                title: Text('Programmer', style: TextStyle(fontSize: 18)),
+                onTap: () => toggleCalculatorType('Programmer'),
+              ),
+            ],
+          ),
+        ),
+        body: CalculatorLayout(
+          isScientific: isScientific,
+          isProgrammer: isProgrammer,
+          showTrigonometry: showTrigonometry,
+          expression: expression,
+          output: output,
+          currentMode: currentMode,
+          currentValue: currentValue.toInt(), // Convert to int
+          trigonometryKey: _trigonometryKey,
+          buttonPressed: buttonPressed,
+          toggleTrigonometry: toggleTrigonometry,
+          changeMode: changeMode,
+          isDegree: isDegree,
+          onDegreeChange: (value) {
+            setState(() {
+              isDegree = value;
+            });
+          },
+        ),
       ),
     );
   }
