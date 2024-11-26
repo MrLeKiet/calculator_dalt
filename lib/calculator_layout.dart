@@ -74,6 +74,8 @@ class _CalculatorLayoutState extends State<CalculatorLayout> {
     }
   }
 
+  //Random comment
+
   bool isButtonEnabled(String buttonText) {
     if (widget.isProgrammer) {
       if (widget.currentMode == 'HEX') {
