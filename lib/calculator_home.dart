@@ -26,6 +26,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
   bool showTrigonometry = false;
   String currentMode = 'DEC';
   double currentValue = 0.0;
+  bool isDegree = true; // Mặc định là Degree
 
   final GlobalKey _trigonometryKey = GlobalKey();
 
@@ -84,11 +85,14 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           buttonText == "ln") {
         // Store the last output value before updating the expression
         _lastOutput = _output;
+        
+        String degreeSymbol = isDegree ? "°" : "";  // Add degree symbol conditionally
+
         // Update expression for trigonometric functions with degree symbol
-        if (operand.isNotEmpty) {
-          expression = expression.substring(0, expression.lastIndexOf(operand) + 1) + " $buttonText(${_lastOutput}°)";
+        if (operand.isNotEmpty ) {
+          expression = expression.substring(0, expression.lastIndexOf(operand) + 1) + " $buttonText(${_lastOutput}$degreeSymbol)";
         } else {
-          expression = "$buttonText(${_lastOutput}°)";
+          expression = "$buttonText(${_lastOutput}$degreeSymbol)";
         }
         calculateTrigonometric(buttonText);
       } else if (buttonText == "√") {
@@ -213,21 +217,38 @@ class _CalculatorHomeState extends State<CalculatorHome> {
       }
       double result = 0.0; // Initialize result with a default value
       bool isValid = true; // Flag to check if the input is valid
+      
+    // Chuyển đổi giữa độ và radian dựa trên chế độ hiện tại
+    double angle = isDegree ? value * pi / 180 : value;
+
       switch (function) {
+        // case "sin":
+        //   result = sin(value * pi / 180); // Convert degrees to radians
+        //   break;
+        // case "cos":
+        //   result = cos(value * pi / 180); // Convert degrees to radians
+        //   break;
+        // case "tan":
+        //   if (value % 180 == 90) {
+        //     // Check for undefined tan values
+        //     isValid = false;
+        //   } else {
+        //     result = tan(value * pi / 180); // Convert degrees to radians
+        //   }
+        //   break;
         case "sin":
-          result = sin(value * pi / 180); // Convert degrees to radians
-          break;
-        case "cos":
-          result = cos(value * pi / 180); // Convert degrees to radians
-          break;
-        case "tan":
-          if (value % 180 == 90) {
-            // Check for undefined tan values
-            isValid = false;
-          } else {
-            result = tan(value * pi / 180); // Convert degrees to radians
-          }
-          break;
+        result = sin(angle);
+        break;
+      case "cos":
+        result = cos(angle);
+        break;
+      case "tan":
+        if (value % 180 == 90 && isDegree) {
+          isValid = false;
+        } else {
+          result = tan(angle);
+        }
+        break;
         case "log":
           if (value <= 0) {
             // Check for invalid log values
@@ -315,6 +336,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
             : isProgrammer
                 ? 'Programmer'
                 : 'Standard'),
+        
       ),
       drawer: Drawer(
         child: ListView(
@@ -366,6 +388,12 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         buttonPressed: buttonPressed,
         toggleTrigonometry: toggleTrigonometry,
         changeMode: changeMode,
+        isDegree: isDegree,
+        onDegreeChange: (value) {
+          setState(() {
+            isDegree = value;
+          });
+        },
       ),
     );
   }
