@@ -126,6 +126,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         calculateTrigonometric(buttonText);
         isPiPressed = false;
       } else if (buttonText == "π") {
+<<<<<<< HEAD
         if (isDegree) {
           // Nếu đang ở chế độ Degree, gán giá trị π = 180
           _output = "180";
@@ -136,6 +137,16 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           currentValue = double.parse(fullPi);
         }
         output = _output;
+=======
+        if (_output == fullPi) {
+          // Do nothing if the current output is already π
+          return;
+        } else {
+          _output = fullPi;
+        }
+        output = _output;
+        currentValue = double.parse(fullPi);
+>>>>>>> 852a4813d6154f87afe637e96de3035db1654549
         isPiPressed = true;
       } else {
         if (isResultDisplayed || isPiPressed) {
@@ -355,6 +366,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     return GestureDetector(
       onTap: _hideTrigonometryPanel,
       child: Scaffold(
@@ -421,6 +433,52 @@ class _CalculatorHomeState extends State<CalculatorHome> {
               isDegree = value;
             });
           },
+=======
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(isScientific
+            ? 'Scientific'
+            : isProgrammer
+                ? 'Programmer'
+                : 'Standard'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                image: DecorationImage(
+                  image: AssetImage('assets/drawer_header_background.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Text(
+                'Calculator Type',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.calculate),
+              title: Text('Standard', style: TextStyle(fontSize: 18)),
+              onTap: () => toggleCalculatorType('Standard'),
+            ),
+            ListTile(
+              leading: Icon(Icons.science),
+              title: Text('Scientific', style: TextStyle(fontSize: 18)),
+              onTap: () => toggleCalculatorType('Scientific'),
+            ),
+            ListTile(
+              leading: Icon(Icons.code),
+              title: Text('Programmer', style: TextStyle(fontSize: 18)),
+              onTap: () => toggleCalculatorType('Programmer'),
+            ),
+          ],
+>>>>>>> 852a4813d6154f87afe637e96de3035db1654549
         ),
       ),
     );
