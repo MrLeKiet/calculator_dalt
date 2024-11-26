@@ -34,7 +34,8 @@ class ScientificCalculatorLayout extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 reverse: true,
                 child: Text(expression,
-                    style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
               ),
             ),
             Container(
@@ -43,7 +44,8 @@ class ScientificCalculatorLayout extends StatelessWidget {
               child: Wrap(
                 children: [
                   Text(output,
-                      style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          fontSize: 30.0, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -132,6 +134,44 @@ class ScientificCalculatorLayout extends StatelessWidget {
                         "π",
                         style: TextStyle(
                             fontSize: 15.0, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 4.0), // Add spacing between buttons
+                  Container(
+                    width: 80.0,
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          buttonPressed("^"), // Call buttonPressed with "^"
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.all(0),
+                      ),
+                      child: RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "x", // Base value
+                              style: TextStyle(
+                                fontSize: 15.0,
+                                fontWeight: FontWeight.bold,
+                               
+                              ),
+                            ),
+                            WidgetSpan(
+                              child: Transform.translate(
+                                offset: Offset(2, -4), // Adjust position for superscript
+                                child: Text(
+                                  "y", // Superscript value
+                                  style: TextStyle(
+                                    fontSize: 12.0, // Smaller font for superscript
+                                    fontWeight: FontWeight.bold,
+                                 
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

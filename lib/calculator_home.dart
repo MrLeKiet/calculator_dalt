@@ -137,6 +137,21 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         }
         output = _output;
         isPiPressed = true;
+      } else if (buttonText == "^") {
+        if (operand.isEmpty) {
+          num1 = _parseInput(_output); // Store the base value
+          operand = buttonText; // Set the operator as ^
+          expression = _formatNumber(num1) + " " + buttonText + " ";
+          _output = ""; // Reset the display for exponent input
+        } else {
+          calculateResult(); // Evaluate the current operation
+          num1 = _parseInput(output); // Update num1 to the result
+          operand = buttonText;
+          expression = _formatNumber(num1) + " " + buttonText + " ";
+          _output = "";
+        }
+        isEqualPressed = false;
+        isPiPressed = false;
       } else {
         if (isResultDisplayed || isPiPressed) {
           _output = buttonText;
@@ -207,6 +222,9 @@ class _CalculatorHomeState extends State<CalculatorHome> {
             } else {
               _output = _formatNumber(num1 / num2);
             }
+            break;
+          case "^": // Handle the power operation
+            _output = _formatNumber(pow(num1, num2).toDouble());
             break;
         }
 
