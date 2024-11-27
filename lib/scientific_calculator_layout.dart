@@ -141,8 +141,7 @@ class ScientificCalculatorLayout extends StatelessWidget {
                   Container(
                     width: 80.0,
                     child: ElevatedButton(
-                      onPressed: () =>
-                          buttonPressed("^"), // Call buttonPressed with "^"
+                      onPressed: () => buttonPressed("^"), // Call buttonPressed with "^"
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.all(0),
                       ),
@@ -150,22 +149,21 @@ class ScientificCalculatorLayout extends StatelessWidget {
                         text: TextSpan(
                           children: [
                             TextSpan(
-                              text: "x", // Base value
+                              text: 'x',
                               style: TextStyle(
                                 fontSize: 15.0,
                                 fontWeight: FontWeight.bold,
-                               
+                                color: const Color.fromARGB(255, 103, 80, 164),
                               ),
                             ),
                             WidgetSpan(
                               child: Transform.translate(
-                                offset: Offset(2, -4), // Adjust position for superscript
+                                offset: const Offset(2, -5),
                                 child: Text(
-                                  "y", // Superscript value
+                                  'y',
                                   style: TextStyle(
-                                    fontSize: 12.0, // Smaller font for superscript
+                                    fontSize: 10.0,
                                     fontWeight: FontWeight.bold,
-                                 
                                   ),
                                 ),
                               ),
