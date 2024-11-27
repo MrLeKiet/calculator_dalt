@@ -126,15 +126,32 @@ class _CalculatorHomeState extends State<CalculatorHome> {
         calculateTrigonometric(buttonText);
         isPiPressed = false;
       } else if (buttonText == "π") {
-        if (_output == fullPi) {
-          // Do nothing if the current output is already π
-          return;
+        if (isDegree) {
+          // Nếu đang ở chế độ Degree, gán giá trị π = 180
+          _output = "180";
+          currentValue = 180.0;
         } else {
+          // Nếu đang ở chế độ Radian, gán giá trị π = 3.14159...
           _output = fullPi;
+          currentValue = double.parse(fullPi);
         }
         output = _output;
-        currentValue = double.parse(fullPi);
         isPiPressed = true;
+      } else if (buttonText == "^") {
+        if (operand.isEmpty) {
+          num1 = _parseInput(_output); // Store the base value
+          operand = buttonText; // Set the operator as ^
+          expression = _formatNumber(num1) + " " + buttonText + " ";
+          _output = ""; // Reset the display for exponent input
+        } else {
+          calculateResult(); // Evaluate the current operation
+          num1 = _parseInput(output); // Update num1 to the result
+          operand = buttonText;
+          expression = _formatNumber(num1) + " " + buttonText + " ";
+          _output = "";
+        }
+        isEqualPressed = false;
+        isPiPressed = false;
       } else {
         if (isResultDisplayed || isPiPressed) {
           _output = buttonText;
@@ -205,6 +222,9 @@ class _CalculatorHomeState extends State<CalculatorHome> {
             } else {
               _output = _formatNumber(num1 / num2);
             }
+            break;
+          case "^": // Handle the power operation
+            _output = _formatNumber(pow(num1, num2).toDouble());
             break;
         }
 
@@ -343,72 +363,83 @@ class _CalculatorHomeState extends State<CalculatorHome> {
     });
   }
 
+  void _hideTrigonometryPanel() {
+    if (showTrigonometry) {
+      setState(() {
+        showTrigonometry = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(isScientific
-            ? 'Scientific'
-            : isProgrammer
-                ? 'Programmer'
-                : 'Standard'),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                image: DecorationImage(
-                  image: AssetImage('assets/drawer_header_background.png'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Text(
-                'Calculator Type',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.calculate),
-              title: Text('Standard', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Standard'),
-            ),
-            ListTile(
-              leading: Icon(Icons.science),
-              title: Text('Scientific', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Scientific'),
-            ),
-            ListTile(
-              leading: Icon(Icons.code),
-              title: Text('Programmer', style: TextStyle(fontSize: 18)),
-              onTap: () => toggleCalculatorType('Programmer'),
-            ),
-          ],
+    return GestureDetector(
+      onTap: _hideTrigonometryPanel,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(isScientific
+              ? 'Scientific'
+              : isProgrammer
+                  ? 'Programmer'
+                  : 'Standard'),
         ),
-      ),
-      body: CalculatorLayout(
-        isScientific: isScientific,
-        isProgrammer: isProgrammer,
-        showTrigonometry: showTrigonometry,
-        expression: expression,
-        output: output,
-        currentMode: currentMode,
-        currentValue: currentValue.toInt(), // Convert to int
-        trigonometryKey: _trigonometryKey,
-        buttonPressed: buttonPressed,
-        toggleTrigonometry: toggleTrigonometry,
-        changeMode: changeMode,
-        isDegree: isDegree,
-        onDegreeChange: (value) {
-          setState(() {
-            isDegree = value;
-          });
-        },
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  image: DecorationImage(
+                    image: AssetImage('assets/drawer_header_background.png'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Text(
+                  'Calculator Type',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.calculate),
+                title: Text('Standard', style: TextStyle(fontSize: 18)),
+                onTap: () => toggleCalculatorType('Standard'),
+              ),
+              ListTile(
+                leading: Icon(Icons.science),
+                title: Text('Scientific', style: TextStyle(fontSize: 18)),
+                onTap: () => toggleCalculatorType('Scientific'),
+              ),
+              ListTile(
+                leading: Icon(Icons.code),
+                title: Text('Programmer', style: TextStyle(fontSize: 18)),
+                onTap: () => toggleCalculatorType('Programmer'),
+              ),
+            ],
+          ),
+        ),
+        body: CalculatorLayout(
+          isScientific: isScientific,
+          isProgrammer: isProgrammer,
+          showTrigonometry: showTrigonometry,
+          expression: expression,
+          output: output,
+          currentMode: currentMode,
+          currentValue: currentValue.toInt(), // Convert to int
+          trigonometryKey: _trigonometryKey,
+          buttonPressed: buttonPressed,
+          toggleTrigonometry: toggleTrigonometry,
+          changeMode: changeMode,
+          isDegree: isDegree,
+          onDegreeChange: (value) {
+            setState(() {
+              isDegree = value;
+            });
+          },
+        ),
       ),
     );
   }
