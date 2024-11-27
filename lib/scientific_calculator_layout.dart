@@ -99,6 +99,7 @@ class ScientificCalculatorLayout extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
+                    flex: 2, // Span the width of two buttons
                     child: ElevatedButton(
                       key: trigonometryKey,
                       onPressed: () => toggleTrigonometry(),
@@ -111,7 +112,7 @@ class ScientificCalculatorLayout extends StatelessWidget {
                           Text(
                             "Trigonometry",
                             style: TextStyle(
-                                fontSize: 15.0, fontWeight: FontWeight.bold),
+                                fontSize: 12.0, fontWeight: FontWeight.bold),
                           ),
                           Icon(
                             showTrigonometry
@@ -123,8 +124,7 @@ class ScientificCalculatorLayout extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 4.0),
-                  Container(
-                    width: 80.0,
+                  Expanded(
                     child: ElevatedButton(
                       onPressed: () => buttonPressed("π"),
                       style: ElevatedButton.styleFrom(
@@ -133,15 +133,15 @@ class ScientificCalculatorLayout extends StatelessWidget {
                       child: Text(
                         "π",
                         style: TextStyle(
-                            fontSize: 15.0, fontWeight: FontWeight.bold),
+                            fontSize: 14.0, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
                   SizedBox(width: 4.0), // Add spacing between buttons
-                  Container(
-                    width: 80.0,
+                  Expanded(
                     child: ElevatedButton(
-                      onPressed: () => buttonPressed("^"), // Call buttonPressed with "^"
+                      onPressed: () =>
+                          buttonPressed("^"), // Call buttonPressed with "^"
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.all(0),
                       ),
@@ -151,7 +151,7 @@ class ScientificCalculatorLayout extends StatelessWidget {
                             TextSpan(
                               text: 'x',
                               style: TextStyle(
-                                fontSize: 15.0,
+                                fontSize: 14.0,
                                 fontWeight: FontWeight.bold,
                                 color: const Color.fromARGB(255, 103, 80, 164),
                               ),
