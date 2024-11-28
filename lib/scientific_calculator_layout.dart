@@ -154,7 +154,7 @@ class ScientificCalculatorLayout extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 15.0,
                                 fontWeight: FontWeight.bold,
-                               
+                                color: const Color.fromARGB(53, 108, 179, 255),
                               ),
                             ),
                             WidgetSpan(
