@@ -363,6 +363,19 @@ class _CalculatorHomeState extends State<CalculatorHome> {
     });
   }
 
+  void updatePiValueOnModeChange() {
+    setState(() {
+      if (isDegree && output == fullPi) {
+        output = "180";
+        currentValue = 180.0;
+      } else if (!isDegree && output == "180") {
+        output = fullPi;
+        currentValue = double.parse(fullPi);
+      }
+      _output = output;
+    });
+  }
+
   void _hideTrigonometryPanel() {
     if (showTrigonometry) {
       setState(() {
@@ -437,6 +450,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           onDegreeChange: (value) {
             setState(() {
               isDegree = value;
+              updatePiValueOnModeChange();
             });
           },
         ),
