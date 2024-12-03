@@ -63,17 +63,17 @@ class ProgrammerCalculatorLayout extends StatelessWidget {
                 maintainState: true,
                 child: Row(
                   children: [
-                    buildButton("A", onPressed: () => buttonPressed("A")),
+                    buildButton("A", onPressed: () => buttonPressed("A"), isEnabled: isButtonEnabled("A")),
                     SizedBox(width: 4.0),
-                    buildButton("B", onPressed: () => buttonPressed("B")),
+                    buildButton("B", onPressed: () => buttonPressed("B"), isEnabled: isButtonEnabled("B")),
                     SizedBox(width: 4.0),
-                    buildButton("C", onPressed: () => buttonPressed("C")),
+                    buildButton("C", onPressed: () => buttonPressed("C"), isEnabled: isButtonEnabled("C")),
                     SizedBox(width: 4.0),
-                    buildButton("D", onPressed: () => buttonPressed("D")),
+                    buildButton("D", onPressed: () => buttonPressed("D"), isEnabled: isButtonEnabled("D")),
                     SizedBox(width: 4.0),
-                    buildButton("E", onPressed: () => buttonPressed("E")),
+                    buildButton("E", onPressed: () => buttonPressed("E"), isEnabled: isButtonEnabled("E")),
                     SizedBox(width: 4.0),
-                    buildButton("F", onPressed: () => buttonPressed("F")),
+                    buildButton("F", onPressed: () => buttonPressed("F"), isEnabled: isButtonEnabled("F")),
                   ],
                 ),
               ),
@@ -86,11 +86,11 @@ class ProgrammerCalculatorLayout extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  buildButton("7", onPressed: () => buttonPressed("7")),
+                  buildButton("7", onPressed: () => buttonPressed("7"), isEnabled: isButtonEnabled("7")),
                   SizedBox(width: 4.0),
-                  buildButton("8", onPressed: () => buttonPressed("8")),
+                  buildButton("8", onPressed: () => buttonPressed("8"), isEnabled: isButtonEnabled("8")),
                   SizedBox(width: 4.0),
-                  buildButton("9", onPressed: () => buttonPressed("9")),
+                  buildButton("9", onPressed: () => buttonPressed("9"), isEnabled: isButtonEnabled("9")),
                   SizedBox(width: 4.0),
                   buildButton("÷", onPressed: () => buttonPressed("÷")),
                 ],
@@ -98,11 +98,11 @@ class ProgrammerCalculatorLayout extends StatelessWidget {
               SizedBox(height: 4.0),
               Row(
                 children: [
-                  buildButton("4", onPressed: () => buttonPressed("4")),
+                  buildButton("4", onPressed: () => buttonPressed("4"), isEnabled: isButtonEnabled("4")),
                   SizedBox(width: 4.0),
-                  buildButton("5", onPressed: () => buttonPressed("5")),
+                  buildButton("5", onPressed: () => buttonPressed("5"), isEnabled: isButtonEnabled("5")),
                   SizedBox(width: 4.0),
-                  buildButton("6", onPressed: () => buttonPressed("6")),
+                  buildButton("6", onPressed: () => buttonPressed("6"), isEnabled: isButtonEnabled("6")),
                   SizedBox(width: 4.0),
                   buildButton("x", onPressed: () => buttonPressed("x")),
                 ],
@@ -110,11 +110,11 @@ class ProgrammerCalculatorLayout extends StatelessWidget {
               SizedBox(height: 4.0),
               Row(
                 children: [
-                  buildButton("1", onPressed: () => buttonPressed("1")),
+                  buildButton("1", onPressed: () => buttonPressed("1"), isEnabled: isButtonEnabled("1")),
                   SizedBox(width: 4.0),
-                  buildButton("2", onPressed: () => buttonPressed("2")),
+                  buildButton("2", onPressed: () => buttonPressed("2"), isEnabled: isButtonEnabled("2")),
                   SizedBox(width: 4.0),
-                  buildButton("3", onPressed: () => buttonPressed("3")),
+                  buildButton("3", onPressed: () => buttonPressed("3"), isEnabled: isButtonEnabled("3")),
                   SizedBox(width: 4.0),
                   buildButton("-", onPressed: () => buttonPressed("-")),
                 ],
@@ -124,7 +124,7 @@ class ProgrammerCalculatorLayout extends StatelessWidget {
                 children: [
                   buildButton(".", onPressed: () => buttonPressed(".")),
                   SizedBox(width: 4.0),
-                  buildButton("0", onPressed: () => buttonPressed("0")),
+                  buildButton("0", onPressed: () => buttonPressed("0"), isEnabled: isButtonEnabled("0")),
                   SizedBox(width: 4.0),
                   buildButton("DEL", onPressed: () => buttonPressed("DEL")),
                   SizedBox(width: 4.0),
@@ -147,13 +147,16 @@ class ProgrammerCalculatorLayout extends StatelessWidget {
     );
   }
 
-  Widget buildButton(String text, {required Function() onPressed}) {
+  Widget buildButton(String text, {required Function() onPressed, bool isEnabled = true}) {
     return Expanded(
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: isEnabled ? onPressed : null,
         child: Text(
           text,
-          style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 14.0,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -183,5 +186,18 @@ class ProgrammerCalculatorLayout extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool isButtonEnabled(String buttonText) {
+    if (currentMode == 'HEX') {
+      return true; // All buttons are enabled in HEX mode
+    } else if (currentMode == 'DEC') {
+      return !['A', 'B', 'C', 'D', 'E', 'F'].contains(buttonText);
+    } else if (currentMode == 'OCT') {
+      return !['8', '9', 'A', 'B', 'C', 'D', 'E', 'F'].contains(buttonText);
+    } else if (currentMode == 'BIN') {
+      return ['0', '1'].contains(buttonText);
+    }
+    return true; // All buttons are enabled in other modes
   }
 }
