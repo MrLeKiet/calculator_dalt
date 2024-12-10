@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'programmer_calculator_layout.dart';
-import 'scientific_calculator_layout.dart';
-import 'standard_calculator_layout.dart';
+import 'layout/programmer_calculator_layout.dart';
+import 'layout/scientific_calculator_layout.dart';
+import 'layout/standard_calculator_layout.dart';
 
 class CalculatorLayout extends StatefulWidget {
   final bool isScientific;
@@ -72,39 +72,6 @@ class _CalculatorLayoutState extends State<CalculatorLayout> {
         oldWidget.currentMode != widget.currentMode) {
       updateCurrentValue();
     }
-  }
-
-  //Random comment, monkey
-
-  
-  bool isButtonEnabled(String buttonText) {
-    if (widget.isProgrammer) {
-      if (widget.currentMode == 'HEX') {
-        return true; // All buttons are enabled in HEX mode
-      } else if (widget.currentMode == 'DEC') {
-        return !['A', 'B', 'C', 'D', 'E', 'F'].contains(buttonText);
-      } else if (widget.currentMode == 'OCT') {
-        return !['8', '9', 'A', 'B', 'C', 'D', 'E', 'F'].contains(buttonText);
-      } else if (widget.currentMode == 'BIN') {
-        return ![
-          '2',
-          '3',
-          '4',
-          '5',
-          '6',
-          '7',
-          '8',
-          '9',
-          'A',
-          'B',
-          'C',
-          'D',
-          'E',
-          'F'
-        ].contains(buttonText);
-      }
-    }
-    return true; // All buttons are enabled in other modes
   }
 
   void onButtonPressed(String buttonText) {
