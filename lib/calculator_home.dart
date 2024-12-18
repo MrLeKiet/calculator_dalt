@@ -56,44 +56,21 @@ class _CalculatorHomeState extends State<CalculatorHome> {
 
   void changeMode(String mode) {
     setState(() {
-      if (calculatorExpression.currentMode != mode) {
-        try {
-          if (calculatorExpression.currentMode == 'HEX') {
-            calculatorExpression.currentValue = int.parse(calculatorExpression.output, radix: 16).toDouble();
-          } else if (calculatorExpression.currentMode == 'OCT') {
-            calculatorExpression.currentValue = int.parse(calculatorExpression.output, radix: 8).toDouble();
-          } else if (calculatorExpression.currentMode == 'BIN') {
-            calculatorExpression.currentValue = int.parse(calculatorExpression.output, radix: 2).toDouble();
-          } else {
-            calculatorExpression.currentValue = double.parse(calculatorExpression.output);
-          }
-
-          if (mode == 'HEX') {
-            calculatorExpression.output = calculatorExpression.currentValue.toInt().toRadixString(16).toUpperCase();
-          } else if (mode == 'OCT') {
-            calculatorExpression.output = calculatorExpression.currentValue.toInt().toRadixString(8);
-          } else if (mode == 'BIN') {
-            calculatorExpression.output = calculatorExpression.currentValue.toInt().toRadixString(2);
-          } else {
-            calculatorExpression.output = calculatorExpression.currentValue.toInt().toString();
-          }
-        } catch (e) {
-          calculatorExpression.output = "0"; // Default value if parsing fails
-        }
-        calculatorExpression.output = calculatorExpression.output;
-        calculatorExpression.currentMode = mode;
-      }
+      calculatorExpression.changeMode(mode);
     });
   }
 
   void updatePiValueOnModeChange() {
     setState(() {
-      if (calculatorExpression.isDegree && calculatorExpression.output == CalculatorExpression.fullPi) {
+      if (calculatorExpression.isDegree &&
+          calculatorExpression.output == CalculatorExpression.fullPi) {
         calculatorExpression.output = "180";
         calculatorExpression.currentValue = 180.0;
-      } else if (!calculatorExpression.isDegree && calculatorExpression.output == "180") {
+      } else if (!calculatorExpression.isDegree &&
+          calculatorExpression.output == "180") {
         calculatorExpression.output = CalculatorExpression.fullPi;
-        calculatorExpression.currentValue = double.parse(CalculatorExpression.fullPi);
+        calculatorExpression.currentValue =
+            double.parse(CalculatorExpression.fullPi);
       }
       calculatorExpression.output = calculatorExpression.output;
     });
@@ -164,7 +141,8 @@ class _CalculatorHomeState extends State<CalculatorHome> {
           expression: calculatorExpression.expression,
           output: calculatorExpression.output,
           currentMode: calculatorExpression.currentMode,
-          currentValue: calculatorExpression.currentValue.toInt(), // Convert to int
+          currentValue:
+              calculatorExpression.currentValue.toInt(), // Convert to int
           trigonometryKey: _trigonometryKey,
           buttonPressed: buttonPressed,
           toggleTrigonometry: toggleTrigonometry,
