@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:calculator/button.dart';
 
 class ScientificCalculatorLayout extends StatelessWidget {
   final String expression;
@@ -292,14 +293,5 @@ class ScientificCalculatorLayout extends StatelessWidget {
     final RenderBox renderBox =
         trigonometryKey.currentContext?.findRenderObject() as RenderBox;
     return renderBox.localToGlobal(Offset.zero);
-  }
-
-  Widget buildButton(String text, {required Function() onPressed}) {
-    return Expanded(
-      child: ElevatedButton(
-        onPressed: onPressed,
-        child: Text(text, style: TextStyle(fontSize: 14.0)),
-      ),
-    );
   }
 }

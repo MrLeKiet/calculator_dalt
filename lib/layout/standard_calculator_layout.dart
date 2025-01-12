@@ -1,3 +1,4 @@
+import 'package:calculator/button.dart';
 import 'package:flutter/material.dart';
 
 class StandardCalculatorLayout extends StatelessWidget {
@@ -107,18 +108,6 @@ class StandardCalculatorLayout extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget buildButton(String text, {required Function() onPressed}) {
-    return Expanded(
-      child: ElevatedButton(
-        onPressed: onPressed,
-        child: Text(
-          text,
-          style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
-        ),
-      ),
     );
   }
 }

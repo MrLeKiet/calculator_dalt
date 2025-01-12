@@ -1,3 +1,4 @@
+import 'package:calculator/button.dart';
 import 'package:flutter/material.dart';
 
 class ProgrammerCalculatorLayout extends StatelessWidget {
@@ -182,22 +183,6 @@ class ProgrammerCalculatorLayout extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget buildButton(String text,
-      {required Function() onPressed, bool isEnabled = true}) {
-    return Expanded(
-      child: ElevatedButton(
-        onPressed: isEnabled ? onPressed : null,
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 14.0,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
     );
   }
 
