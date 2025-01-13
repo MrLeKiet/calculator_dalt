@@ -16,13 +16,13 @@ class CalculatorExpression {
   String currentMode = 'DEC'; // Chế độ hiện tại (thập phân, nhị phân, ...)
   double currentValue = 0.0; // Giá trị hiện tại của kết quả
   bool isDegree = true; // Trạng thái Độ (Degree) hoặc Radian
+  bool isProgrammer = false;
   static const String fullPi =
       "3.1415926535897932384626433832795"; // Giá trị Pi đầy đủ
 
   double _parseInput(String input) {
     if (currentMode == 'HEX') {
-      return BigInt.parse(input, radix: 16)
-          .toDouble(); // Dùng BigInt để hỗ trợ HEX lớn
+      return int.parse(input, radix: 16).toDouble();
     } else if (currentMode == 'OCT') {
       return int.parse(input, radix: 8).toDouble();
     } else if (currentMode == 'BIN') {
@@ -39,22 +39,22 @@ class CalculatorExpression {
   // Phương thức định dạng kết quả thành chuỗi theo chế độ hiện tại
   String _formatNumber(double number) {
     if (currentMode == 'HEX') {
-      return BigInt.from(number.toInt()).toRadixString(16).toUpperCase();
+      return number.toInt().toRadixString(16).toUpperCase(); // Định dạng HEX
     } else if (currentMode == 'OCT') {
-      return number.toInt().toRadixString(8);
+      return number.toInt().toRadixString(8); // Định dạng OCT
     } else if (currentMode == 'BIN') {
-      return number.toInt().toRadixString(2);
+      return number.toInt().toRadixString(2); // Định dạng BIN
     } else {
       return number == number.toInt()
           ? number.toInt().toString()
-          : number.toString();
+          : number.toString(); // Định dạng thập phân
     }
   }
 
   void calculateResult() {
     try {
-      num2 = _parseInput(_output); // Lấy giá trị đầu vào thứ hai từ _output
-
+      num2 = _parseInput(
+          _output); // Chuyển _output thành số để làm toán hạng thứ hai
       switch (operand) {
         case "+":
           _output = _formatResultNumber(num1 + num2); // Phép cộng
@@ -69,15 +69,11 @@ class CalculatorExpression {
           if (num2 == 0) {
             _output = "Infinity"; // Xử lý chia cho 0
           } else {
-            if (currentMode == 'HEX' ||
-                currentMode == 'OCT' ||
-                currentMode == 'BIN' ||
-                isProgrammerMode()) {
-              // Chế độ Programmer, dùng phép chia nguyên
-              _output = _formatResultNumber((num1 ~/ num2).toDouble());
+            if (isProgrammer) {
+              _output = _formatResultNumber(
+                  (num1 ~/ num2).toDouble()); // Phép chia lấy phần nguyên
             } else {
-              // Chế độ bình thường, dùng phép chia thập phân
-              _output = _formatResultNumber(num1 / num2);
+              _output = _formatResultNumber(num1 / num2); // Phép chia
             }
           }
           break;
@@ -89,11 +85,11 @@ class CalculatorExpression {
 
       // Định dạng kết quả theo chế độ hiện tại
       if (currentMode == 'HEX') {
-        output = num1.toInt().toRadixString(16).toUpperCase();
+        output = int.parse(_output).toRadixString(16).toUpperCase();
       } else if (currentMode == 'OCT') {
-        output = num1.toInt().toRadixString(8);
+        output = int.parse(_output).toRadixString(8);
       } else if (currentMode == 'BIN') {
-        output = num1.toInt().toRadixString(2);
+        output = int.parse(_output).toRadixString(2);
       } else {
         output = _output; // Định dạng thập phân
       }
@@ -103,15 +99,7 @@ class CalculatorExpression {
       operand = ""; // Reset toán tử
     } catch (e) {
       _output = "Error"; // Xử lý ngoại lệ
-      output = _output;
     }
-  }
-
-  bool isProgrammerMode() {
-    return currentMode == 'HEX' ||
-        currentMode == 'DEC' ||
-        currentMode == 'OCT' ||
-        currentMode == 'BIN';
   }
 
   String _formatResultNumber(double number) {
@@ -202,28 +190,21 @@ class CalculatorExpression {
   }
 
   void handleSquareRoot() {
-    _lastOutput = _output; // Lưu giá trị đầu ra hiện tại
-    double value = _parseInput(_output);
-
-    if (value < 0) {
-      _output = "Invalid input"; // Không thể tính căn bậc hai số âm
-      output = _output;
-      return;
-    }
-
-    double result = sqrt(value); // Tính căn bậc hai
-
+    _lastOutput = _output; // Lưu lại giá trị đầu ra hiện tại
     if (operand.isNotEmpty) {
-      // Giữ nguyên biểu thức với √(4)
-      expression += " √($_lastOutput)";
+      // Nếu đã có toán tử, cập nhật biểu thức bằng cách thêm căn bậc hai
+      expression =
+          expression.substring(0, expression.lastIndexOf(operand) + 1) +
+              " √($_lastOutput)";
     } else {
-      // Cập nhật biểu thức nếu không có toán tử
+      // Nếu chưa có toán tử, chỉ thêm căn bậc hai vào biểu thức
       expression = "√($_lastOutput)";
     }
+    calculateTrigonometric("√"); // Tính căn bậc hai
 
-    _output = _formatResult(result); // Lưu kết quả vào _output
-    output = _output; // Cập nhật đầu ra
-    num1 = result; // Cập nhật giá trị cho num1
+    // Cập nhật lại trạng thái biểu thức với kết quả của √
+    num1 = _parseInput(_output); // Cập nhật giá trị hiện tại vào num1
+    output = _output; // Cập nhật đầu ra hiển thị
     isPiPressed = false; // Reset trạng thái Pi
   }
 
@@ -358,40 +339,24 @@ class CalculatorExpression {
   }
 
   void handleEquals() {
-    if (!isEqualPressed) {
-      if (operand.isNotEmpty) {
-        // Lấy giá trị num2 từ _output
-        num2 = _parseInput(_output);
-
-        // Hiển thị biểu thức dựa trên chế độ hiện tại
-        String num1Str = currentMode == 'HEX'
-            ? num1.toInt().toRadixString(16).toUpperCase()
-            : currentMode == 'OCT'
-                ? num1.toInt().toRadixString(8)
-                : currentMode == 'BIN'
-                    ? num1.toInt().toRadixString(2)
-                    : _formatResult(num1);
-
-        String num2Str = currentMode == 'HEX'
-            ? num2.toInt().toRadixString(16).toUpperCase()
-            : currentMode == 'OCT'
-                ? num2.toInt().toRadixString(8)
-                : currentMode == 'BIN'
-                    ? num2.toInt().toRadixString(2)
-                    : _formatResult(num2);
-
-        expression = "$num1Str $operand $num2Str =";
-
-        calculateResult(); // Tính toán kết quả
-      } else if (isTrigonometricExpression()) {
-        // Nếu là biểu thức lượng giác, chỉ thêm dấu "="
-        expression += " =";
+  if (!isEqualPressed) {
+    // Nếu toán tử không rỗng, thêm đầu ra vào biểu thức
+    if (operand.isNotEmpty) {
+      expression += _output;
+      // Loại bỏ phần "√($_lastOutput)" khỏi biểu thức trước khi tính toán
+      if (expression.contains("√($_lastOutput)")) {
+        expression = expression.replaceAll("√($_lastOutput)", "");
       }
-
-      isEqualPressed = true; // Đánh dấu trạng thái "=" đã nhấn
+      calculateResult(); // Tính kết quả phép toán
+      expression += " ="; // Thêm dấu "=" vào biểu thức
+    } else if (isTrigonometricExpression()) {
+      // Nếu là biểu thức lượng giác, chỉ thêm dấu "="
+      expression += " =";
     }
-    isPiPressed = false; // Reset trạng thái Pi
+    isEqualPressed = true; // Đánh dấu trạng thái "=" đã nhấn
   }
+  isPiPressed = false; // Reset trạng thái Pi
+}
 
   void deleteLast() {
     if (_output.length > 1) {

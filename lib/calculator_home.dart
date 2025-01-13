@@ -17,6 +17,7 @@ class _CalculatorHomeState extends State<CalculatorHome> {
 
   void buttonPressed(String buttonText) {
     setState(() {
+      calculatorExpression.isProgrammer = isProgrammer; // Cập nhật trạng thái
       if (buttonText == "CLEAR") {
         calculatorExpression.clearAll();
       } else if (buttonText == "DEL") {
